@@ -1,0 +1,22 @@
+{
+  "name": "Ejen",
+  "model": {
+    "provider": "custom-llm",
+    "url": "https://YOUR-RAILWAY-BACKEND-URL/llm/chat/completions",
+    "model": "qwen-plus"
+  },
+  "voice": {
+    "provider": "11labs",
+    "voiceId": "pick-a-natural-sounding-voice"
+  },
+  "firstMessage": "Hi, this is Ejen calling on behalf of the property team — this call may be recorded for quality purposes. Am I speaking with the right person about a property inquiry?",
+  "serverUrl": "https://YOUR-RAILWAY-BACKEND-URL/webhook/vapi",
+  "serverUrlSecret": "match-VAPI_WEBHOOK_SECRET-env-var",
+  "endCallFunctionEnabled": true,
+  "recordingEnabled": true,
+  "transcriber": {
+    "provider": "deepgram",
+    "language": "multi"
+  },
+  "notes": "language=multi lets Deepgram handle BM/English code-switching; verify accuracy with a real test call before the demo, and have a manual fallback script ready if accuracy is poor on Malaysian accents."
+}
