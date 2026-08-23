@@ -1,33 +1,67 @@
-# KeyNest AI — Frontend Integration Contract
+# KeyNest AI — Backend & Channel Integration Contract
 
-This document is for the backend engineer (Person A) wiring the real API.
+This document is for the backend engineer (Person A) wiring the real API, Hermes/Qwen agent, Supabase CRM, WhatsApp webhooks, and calendar/voice providers.
+
+## Product model
+
+- Customers communicate primarily through **WhatsApp**.
+- The website is an **internal operations dashboard** for agency staff.
+- The backend is the source of truth for leads, conversations, viewings, and call requests.
+- The frontend falls back to a deterministic **demo mode** when `NEXT_PUBLIC_DEMO_MODE=true`.
 
 ## Environment variables
 
 All public env vars are read at build time in `lib/api.ts`.
 
 ```bash
-NEXT_PUBLIC_DEMO_MODE=true        # set to false to call live backend
+NEXT_PUBLIC_DEMO_MODE=true        # set to false to call the live backend
 NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
 ```
 
-When `NEXT_PUBLIC_DEMO_MODE` is `true`, the frontend uses the deterministic mock engine in `lib/demo-agent.ts` and the seeded data in `lib/mock-data.ts`.
+When `NEXT_PUBLIC_DEMO_MODE` is `true`, the frontend uses the mock data and simulation functions in `lib/mock-data.ts` and `lib/api.ts`.
 
 When set to `false`, the frontend calls the backend at `NEXT_PUBLIC_API_BASE_URL`.
 
-## Expected endpoints
+## Suggested live endpoints
 
-All live endpoints are called from `lib/api.ts`.
+The live functions live in `lib/api.ts`. You can update these paths or replace `lib/api.ts` with real fetch logic.
 
-### 1. `POST /api/chat`
+### 1. `GET /api/overview`
+
+Returns the dashboard overview data:
+
+```json
+{
+  "newLeads": 12,
+  "qualifiedLeads": 8,
+  "bookedViewings": 4,
+  "hotLeads": 3,
+  "medianFirstResponse": "< 1 min",
+  "activeConversations": 8,
+  "activities": [ ... ],
+  "leads": [ ... ],
+  "viewings": [ ... ]
+}
+```
+
+### 2. `GET /api/leads`
+
+Return an array of `Lead` objects. Used on `/leads`.
+
+### 3. `GET /api/leads/:id`
+
+Return a single `Lead` object with conversation and timeline. Used on `/leads/[id]`.
+
+### 4. `POST /api/conversations/:id/messages`
+
+Triggered when a new WhatsApp message arrives (or is simulated).
 
 **Request**
 
 ```json
 {
-  "sessionId": "string",
-  "leadId?": "string",
-  "message": "string"
+  "content": "Hi, I’m looking for a 3-bedroom condo near KLCC...",
+  "channel": "whatsapp"
 }
 ```
 
@@ -35,84 +69,86 @@ All live endpoints are called from `lib/api.ts`.
 
 ```json
 {
-  "message": "string",
-  "leadId?": "string",
-  "qualification?": {
-    "budgetMin?": number,
-    "budgetMax?": number,
-    "location?": "string",
-    "financing?": boolean,
-    "propertyType?": "string",
-    "bedrooms?": number,
-    "timelineDays?": number
+  "message": {
+    "id": "string",
+    "conversationId": "string",
+    "sender": "ai",
+    "channel": "whatsapp",
+    "content": "...",
+    "createdAt": "ISO-8601",
+    "deliveryStatus": "sent",
+    "metadata?": {
+      "listings?": [ ... ],
+      "slots?": [ ... ],
+      "booking?": { ... },
+      "actionType?": "qualification" | "listing_match" | "booking" | "call_request"
+    }
   },
-  "listings?": [ ... ],
-  "suggestedSlots?": [ ... ],
-  "leadScore?": number,
-  "status?": "new" | "qualified" | "booked" | "cold",
-  "booking?": {
-    "bookingId": "string",
-    "confirmed": boolean,
-    "appointmentAt": "ISO-8601",
-    "leadId": "string",
-    "listingId": "string",
-    "slotId": "string",
-    "listing": { ... },
-    "slot": { ... }
-  }
+  "lead": { ... }
 }
 ```
 
-### 2. `GET /api/leads`
+### 5. `POST /api/conversations/:id/takeover`
 
-Return an array of `Lead` objects. Used on `/dashboard`.
+Set `conversationStatus` to `human_handling` and add a handover timeline event.
 
-### 3. `GET /api/leads/:id`
+### 6. `POST /api/conversations/:id/assign`
 
-Return a single `Lead` object. Used on `/leads/[id]`.
+**Request**
 
-### 4. `POST /api/viewings`
+```json
+{ "agentId": "agent-123" }
+```
+
+Set `assignedAgent` and record an assignment timeline event.
+
+### 7. `POST /api/calls`
 
 **Request**
 
 ```json
 {
   "leadId": "string",
-  "listingId": "string",
-  "slotId": "string"
+  "listingId?": "string"
 }
 ```
 
-**Response**
+Create an AI call request. Set `callStatus` to `requested` and add a `call_requested` timeline event.
 
-```json
-{
-  "bookingId": "string",
-  "confirmed": boolean,
-  "appointmentAt": "ISO-8601"
-}
-```
+### 8. `GET /api/viewings`
 
-## Types
+Return an array of `Viewing` objects. Used on `/viewings`.
 
-The canonical types live in `lib/types.ts`:
+### 9. WhatsApp webhook
+
+Incoming WhatsApp Business Platform messages should be normalized by the backend into `ConversationMessage` objects and stored in Supabase. The backend then calls Hermes/Qwen to generate the next response, which is sent back via WhatsApp and also made available to the frontend.
+
+### 10. Calendar booking
+
+When a viewing is confirmed, create the calendar event and return a `Viewing` object with `confirmed: true` and `appointmentAt`.
+
+## Canonical types
+
+All types live in `lib/types.ts`:
 
 - `Lead`
 - `Listing`
-- `ViewingSlot`
-- `Viewing`
+- `ViewingSlot` / `Viewing`
 - `ConversationMessage`
-- `LeadStatus`
-- `ChatRequest` / `ChatResponse`
-- `BookingRequest` / `BookingResponse`
+- `TimelineEvent`
+- `LeadStatus` = `new` | `qualified` | `booked` | `nurture`
+- `ConversationStatus` = `ai_handling` | `human_handling` | `closed`
+- `CallStatus` = `not_requested` | `requested` | `scheduled` | `completed`
+- `Channel` = `whatsapp` | `web` | `phone`
 
 ## Backend events the frontend depends on
 
-1. **Chat response** — `POST /api/chat` must return the agent reply and any `listings` / `suggestedSlots` / `booking` / `qualification` updates.
-2. **Lead profile updates** — the frontend passes the latest `qualification`, `leadScore`, and `status` in the chat response and uses them to update the right-side profile.
-3. **Listing matches** — when a user is ready to view, the chat response should include `listings`.
-4. **Slot retrieval** — after the user selects a listing, the next chat response should include `suggestedSlots`.
-5. **Booking confirmation** — after the user picks a slot, the chat response should include a `booking` object. The frontend will then update the CRM via `updateLead`.
+1. **Overview feed** — fresh activity events whenever the AI qualifies a lead, matches listings, books a viewing, or a call is requested.
+2. **Lead list** — normalized, filterable lead records from the CRM.
+3. **Lead detail** — full conversation, qualification, timeline, and next best action.
+4. **Incoming messages** — a normalized AI response returned after each customer WhatsApp message, including any `listings`, `slots`, or `booking`.
+5. **Takeover / assign / call request** — immediate status updates reflected in the UI and timeline.
+6. **Viewings** — a list of confirmed/pending viewings for the calendar page.
 
 ## Switching modes
 
@@ -136,3 +172,4 @@ npm run build
 - The frontend does not require authentication.
 - Do not expose secret keys in `NEXT_PUBLIC_` variables; those are embedded in the client bundle.
 - If a live endpoint is unavailable, the frontend silently falls back to mock data for that call and logs a warning.
+- Phone numbers are masked in demo mode (`+60 12-**** 4821`); production should mask PII in the dashboard.

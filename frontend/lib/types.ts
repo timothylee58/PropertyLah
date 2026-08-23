@@ -1,14 +1,19 @@
-export type LeadStatus = "new" | "qualified" | "booked" | "cold";
-export type LeadIntent = "Buyer" | "Seller" | "Renter";
+export type LeadStatus = "new" | "qualified" | "booked" | "nurture";
+export type LeadIntent = "buyer" | "seller" | "renter";
+export type Channel = "whatsapp" | "web" | "phone";
+export type ConversationStatus = "ai_handling" | "human_handling" | "closed";
+export type CallStatus = "not_requested" | "requested" | "scheduled" | "completed";
 
 export interface Qualification {
   budgetMin?: number;
   budgetMax?: number;
   location?: string;
-  financing?: boolean;
+  preferredAreas?: string[];
+  financing?: "approved" | "cash" | "unknown";
   propertyType?: string;
   bedrooms?: number;
   timelineDays?: number;
+  timeline?: string;
   viewingSelected?: boolean;
 }
 
@@ -41,35 +46,69 @@ export interface Viewing {
   slotId: string;
   listing: Listing;
   slot: ViewingSlot;
+  channel?: Channel;
+}
+
+export type MessageSender = "lead" | "ai" | "human" | "system";
+
+export interface MessageMetadata {
+  listings?: Listing[];
+  slots?: ViewingSlot[];
+  booking?: Viewing;
+  actionType?: "qualification" | "listing_match" | "booking" | "call_request";
 }
 
 export interface ConversationMessage {
   id: string;
-  role: "user" | "agent";
+  conversationId: string;
+  sender: MessageSender;
+  channel: Channel;
   content: string;
   createdAt: string;
-  listings?: Listing[];
-  slots?: ViewingSlot[];
-  booking?: { listing: Listing; slot: ViewingSlot };
+  deliveryStatus?: "sent" | "delivered" | "read";
+  metadata?: MessageMetadata;
   actions?: string[];
 }
 
 export interface Lead {
   id: string;
   name: string;
+  phoneMasked: string;
   source: string;
+  channel: Channel;
   intent: LeadIntent;
   location?: string;
+  preferredAreas?: string[];
   budget?: string;
+  budgetLabel: string;
   budgetMax?: number;
+  propertyType?: string;
+  bedrooms?: number;
+  financing?: "approved" | "cash" | "unknown";
+  timeline?: string;
   score: number;
+  scoreLabel: "Hot" | "Warm" | "Nurture";
   status: LeadStatus;
+  conversationStatus: ConversationStatus;
+  assignedAgent?: string;
+  aiSummary: string;
+  nextBestAction: string;
+  callStatus: CallStatus;
   lastActivity: string;
   qualification: Qualification;
   conversation: ConversationMessage[];
   recommendedListings?: Listing[];
   bookedViewing?: Viewing;
-  nextBestAction?: string;
+  timelineEvents?: TimelineEvent[];
+}
+
+export interface TimelineEvent {
+  id: string;
+  type: "inquiry" | "ai_response" | "qualification" | "listing_match" | "viewing_booked" | "call_requested" | "handover" | "agent_note";
+  title: string;
+  description?: string;
+  createdAt: string;
+  agent?: string;
 }
 
 export interface ChatRequest {

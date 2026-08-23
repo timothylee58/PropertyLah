@@ -1,9 +1,10 @@
 "use client";
 
 import { Lead } from "@/lib/types";
-import { formatDate } from "@/lib/utils";
+import { timeAgo, channelLabel } from "@/lib/utils";
 import { LeadStatusBadge } from "./lead-status-badge";
 import { useRouter } from "next/navigation";
+import { Badge } from "@/components/ui/badge";
 
 interface LeadTableProps {
   leads: Lead[];
@@ -19,11 +20,13 @@ export function LeadTable({ leads }: LeadTableProps) {
           <thead className="bg-warm-100 text-xs font-semibold uppercase tracking-wider text-stone-600">
             <tr>
               <th className="px-4 py-3">Lead</th>
+              <th className="px-4 py-3">Channel</th>
               <th className="px-4 py-3">Intent</th>
-              <th className="px-4 py-3">Location</th>
+              <th className="px-4 py-3">Preferred area</th>
               <th className="px-4 py-3">Budget</th>
               <th className="px-4 py-3">Score</th>
               <th className="px-4 py-3">Status</th>
+              <th className="px-4 py-3">Assigned to</th>
               <th className="px-4 py-3">Last activity</th>
             </tr>
           </thead>
@@ -37,10 +40,13 @@ export function LeadTable({ leads }: LeadTableProps) {
                 <td className="px-4 py-3">
                   <div>
                     <p className="font-medium text-stone-900">{lead.name}</p>
-                    <p className="text-xs text-stone-500">{lead.source}</p>
+                    <p className="text-xs text-stone-500">{lead.phoneMasked}</p>
                   </div>
                 </td>
-                <td className="px-4 py-3 text-stone-700">{lead.intent}</td>
+                <td className="px-4 py-3 text-stone-700">
+                  <Badge variant="soft" className="text-[10px]">{channelLabel(lead.channel)}</Badge>
+                </td>
+                <td className="px-4 py-3 text-stone-700 capitalize">{lead.intent}</td>
                 <td className="px-4 py-3 text-stone-700">{lead.location || "—"}</td>
                 <td className="px-4 py-3 text-stone-700">{lead.budget || "—"}</td>
                 <td className="px-4 py-3">
@@ -50,14 +56,15 @@ export function LeadTable({ leads }: LeadTableProps) {
                 <td className="px-4 py-3">
                   <LeadStatusBadge status={lead.status} />
                 </td>
+                <td className="px-4 py-3 text-stone-700">{lead.assignedAgent || "—"}</td>
                 <td className="px-4 py-3 text-stone-500">
-                  {formatDate(lead.lastActivity)}
+                  {timeAgo(lead.lastActivity)}
                 </td>
               </tr>
             ))}
             {leads.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-sm text-stone-500">
+                <td colSpan={9} className="px-4 py-8 text-center text-sm text-stone-500">
                   No leads found.
                 </td>
               </tr>

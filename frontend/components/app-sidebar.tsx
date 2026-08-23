@@ -3,11 +3,15 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Home, LayoutDashboard, Sparkles } from "lucide-react";
+import { IS_DEMO } from "@/lib/api";
+import { LayoutDashboard, MessageSquare, Users, Calendar, Settings, Sparkles, CheckCircle } from "lucide-react";
 
 const nav = [
-  { href: "/", label: "Agent Inbox", icon: Home },
-  { href: "/dashboard", label: "Lead Dashboard", icon: LayoutDashboard },
+  { href: "/", label: "Overview", icon: LayoutDashboard },
+  { href: "/inbox", label: "WhatsApp Inbox", icon: MessageSquare },
+  { href: "/leads", label: "Leads", icon: Users },
+  { href: "/viewings", label: "Viewings", icon: Calendar },
+  { href: "/settings", label: "Settings", icon: Settings },
 ];
 
 export function AppSidebar({ className }: { className?: string }) {
@@ -22,7 +26,7 @@ export function AppSidebar({ className }: { className?: string }) {
     >
       <div className="mb-8">
         <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-700 text-white">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-700 text-white">
             <Sparkles className="h-5 w-5" />
           </div>
           <div>
@@ -38,7 +42,7 @@ export function AppSidebar({ className }: { className?: string }) {
 
       <nav className="flex-1 space-y-1">
         {nav.map((item) => {
-          const isActive = pathname === item.href;
+          const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
           const Icon = item.icon;
           return (
             <Link
@@ -47,7 +51,7 @@ export function AppSidebar({ className }: { className?: string }) {
               className={cn(
                 "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition",
                 isActive
-                  ? "bg-teal-50 text-teal-800"
+                  ? "bg-emerald-50 text-emerald-800"
                   : "text-stone-600 hover:bg-stone-50 hover:text-stone-900"
               )}
             >
@@ -67,9 +71,10 @@ export function AppSidebar({ className }: { className?: string }) {
             </span>
             <span className="text-xs font-medium text-stone-700">AI Agent Online</span>
           </div>
-          <p className="mt-1 text-[10px] text-stone-500">
-            Qualifying leads 24/7 in English & BM.
-          </p>
+          <div className="mt-2 flex items-center gap-1.5 text-[10px] text-stone-500">
+            <CheckCircle className="h-3 w-3 text-emerald-600" />
+            {IS_DEMO ? "WhatsApp Demo Connected" : "WhatsApp Connected"}
+          </div>
         </div>
 
         <div className="text-[10px] leading-relaxed text-stone-400">

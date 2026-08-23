@@ -1,15 +1,16 @@
 "use client";
 
 import { ConversationMessage } from "@/lib/types";
-import { cn } from "@/lib/utils";
+import { cn, timeAgo } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { ListingCard } from "./listing-card";
 import { AppointmentPicker } from "./appointment-picker";
 import { BookingConfirmation } from "./booking-confirmation";
-import { Sparkles } from "lucide-react";
+import { Check, CheckCheck } from "lucide-react";
 
 interface ChatMessageProps {
   message: ConversationMessage;
+  leadName?: string;
   onSelectListing?: (id: string) => void;
   onSelectSlot?: (id: string) => void;
   disabled?: boolean;
@@ -17,36 +18,57 @@ interface ChatMessageProps {
 
 export function ChatMessage({
   message,
+  leadName = "Lead",
   onSelectListing,
   onSelectSlot,
   disabled,
 }: ChatMessageProps) {
-  const isUser = message.role === "user";
+  const isLead = message.sender === "lead";
+  const isAi = message.sender === "ai";
+  const isSystem = message.sender === "system";
+
+  if (isSystem) {
+    return (
+      <div className="flex justify-center py-2">
+        <span className="rounded-full bg-stone-200/70 px-3 py-1 text-[10px] font-medium text-stone-600">
+          {message.content}
+        </span>
+      </div>
+    );
+  }
 
   return (
     <div
       className={cn(
-        "flex w-full gap-3",
-        isUser ? "flex-row-reverse" : "flex-row"
+        "flex w-full gap-2 px-1",
+        isLead ? "justify-start" : "justify-end"
       )}
     >
-      {!isUser && (
-        <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-teal-700 text-white shadow-sm">
-          <Sparkles className="h-4 w-4" />
-        </div>
-      )}
-
-      <div className={cn("flex max-w-[85%] flex-col gap-2", isUser ? "items-end" : "items-start")}>
+      <div className={cn("flex max-w-[85%] flex-col gap-1", isLead ? "items-start" : "items-end")}>
         {message.content && (
           <div
             className={cn(
-              "animate-in fade-in slide-in-from-bottom-2 text-sm leading-relaxed duration-300",
-              isUser
-                ? "rounded-2xl rounded-tr-md bg-teal-800 px-4 py-3 text-white"
-                : "rounded-2xl rounded-tl-md bg-white px-4 py-3 text-stone-800 shadow-sm"
+              "relative animate-in fade-in text-sm leading-relaxed duration-300",
+              isLead
+                ? "rounded-2xl rounded-tl-md bg-white px-4 py-2.5 text-stone-800 shadow-sm"
+                : "rounded-2xl rounded-tr-md bg-emerald-600 px-4 py-2.5 text-white shadow-sm"
             )}
           >
-            {message.content}
+            <p className="whitespace-pre-wrap">{message.content}</p>
+            <div className={cn("mt-1 flex items-center justify-end gap-1 text-[10px]", isAi ? "text-emerald-100" : "text-stone-400")}>
+              <span>{timeAgo(message.createdAt)}</span>
+              {!isLead && (
+                <span>
+                  {message.deliveryStatus === "read" ? (
+                    <CheckCheck className="h-3.5 w-3.5" />
+                  ) : message.deliveryStatus === "delivered" ? (
+                    <Check className="h-3.5 w-3.5" />
+                  ) : (
+                    <Check className="h-3.5 w-3.5" />
+                  )}
+                </span>
+              )}
+            </div>
           </div>
         )}
 
@@ -56,7 +78,12 @@ export function ChatMessage({
               <Badge
                 key={action}
                 variant="outline"
-                className="border-teal-200 bg-teal-50 text-[10px] text-teal-800"
+                className={cn(
+                  "text-[10px]",
+                  isAi
+                    ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                    : "border-stone-200 bg-stone-50 text-stone-600"
+                )}
               >
                 {action}
               </Badge>
@@ -64,9 +91,9 @@ export function ChatMessage({
           </div>
         )}
 
-        {message.listings && message.listings.length > 0 && (
-          <div className="grid gap-3 pt-1 sm:grid-cols-2">
-            {message.listings.map((listing) => (
+        {message.metadata?.listings && message.metadata.listings.length > 0 && (
+          <div className={cn("grid gap-3 pt-1", isAi ? "sm:grid-cols-2" : "")}>
+            {message.metadata.listings.map((listing) => (
               <ListingCard
                 key={listing.id}
                 listing={listing}
@@ -77,21 +104,21 @@ export function ChatMessage({
           </div>
         )}
 
-        {message.slots && message.slots.length > 0 && onSelectSlot && (
+        {message.metadata?.slots && message.metadata.slots.length > 0 && onSelectSlot && (
           <div className="w-full pt-1">
             <AppointmentPicker
-              slots={message.slots}
+              slots={message.metadata.slots}
               onSelect={(slot) => onSelectSlot(slot.id)}
               disabled={disabled}
             />
           </div>
         )}
 
-        {message.slots && message.slots.length > 0 && !onSelectSlot && (
+        {message.metadata?.slots && message.metadata.slots.length > 0 && !onSelectSlot && (
           <div className="w-full space-y-2 rounded-2xl border border-stone-200 bg-white p-4 shadow-sm">
             <p className="text-xs font-medium text-stone-500">Suggested viewing slots</p>
             <div className="flex flex-wrap gap-2">
-              {message.slots.map((slot) => (
+              {message.metadata.slots.map((slot) => (
                 <Badge key={slot.id} variant="soft" className="text-xs">
                   {slot.label}
                 </Badge>
@@ -100,9 +127,9 @@ export function ChatMessage({
           </div>
         )}
 
-        {message.booking && (
+        {message.metadata?.booking && (
           <div className="pt-1">
-            <BookingConfirmation listing={message.booking.listing} slot={message.booking.slot} />
+            <BookingConfirmation listing={message.metadata.booking.listing} slot={message.metadata.booking.slot} />
           </div>
         )}
       </div>

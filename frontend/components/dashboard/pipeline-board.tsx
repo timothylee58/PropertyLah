@@ -9,7 +9,7 @@ const columns: { key: LeadStatus; label: string; color: string }[] = [
   { key: "new", label: "New", color: "border-t-4 border-t-sky-500" },
   { key: "qualified", label: "Qualified", color: "border-t-4 border-t-violet-500" },
   { key: "booked", label: "Booked", color: "border-t-4 border-t-emerald-500" },
-  { key: "cold", label: "Cold", color: "border-t-4 border-t-stone-300" },
+  { key: "nurture", label: "Nurture", color: "border-t-4 border-t-stone-300" },
 ];
 
 export function PipelineBoard({ leads }: { leads: Lead[] }) {
