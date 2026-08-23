@@ -3,11 +3,15 @@
 import pytest
 from fastapi.testclient import TestClient
 
-from app.api.routes import dashboard
+from app.api.routes import dashboard, leads
 from app.main import app
-from app.services import dashboard_presenter
+from app.services import dashboard_presenter, lead_service
+from tests.fake_supabase import FakeDb
 
-client = TestClient(app)
+API_KEY = "test-dashboard-key"
+
+client = TestClient(app, headers={"X-Api-Key": API_KEY})
+anon_client = TestClient(app)
 
 LEAD_ROW = {
     "id": "lead-1",
@@ -25,55 +29,20 @@ LEAD_ROW = {
     "booking_uid": "cal-abc",
     "created_at": "2026-08-20T01:00:00+00:00",
     "updated_at": "2026-08-20T01:09:00+00:00",
+    "conversation_status": "closed",
+    "call_status": "completed",
 }
-
-
-class FakeQuery:
-    """Just enough of the supabase-py builder for these routes."""
-
-    def __init__(self, rows: list[dict], calls: list[tuple]):
-        self._rows = rows
-        self._calls = calls
-
-    def select(self, *args) -> "FakeQuery":
-        return self
-
-    def order(self, *args, **kwargs) -> "FakeQuery":
-        return self
-
-    def limit(self, *args) -> "FakeQuery":
-        return self
-
-    def eq(self, column: str, value: str) -> "FakeQuery":
-        self._calls.append((column, value))
-        return self._filtered(
-            [row for row in self._rows if str(row.get(column)) == str(value)]
-        )
-
-    def _filtered(self, rows: list[dict]) -> "FakeQuery":
-        return FakeQuery(rows, self._calls)
-
-    def execute(self) -> "FakeQuery":
-        return self
-
-    @property
-    def data(self) -> list[dict]:
-        return self._rows
-
-
-class FakeDb:
-    def __init__(self, tables: dict[str, list[dict]]):
-        self.tables = tables
-        self.calls: list[tuple] = []
-
-    def table(self, name: str) -> FakeQuery:
-        return FakeQuery(self.tables.get(name, []), self.calls)
 
 
 @pytest.fixture
 def db(monkeypatch):
-    fake = FakeDb({"leads": [dict(LEAD_ROW)], "call_logs": []})
+    fake = FakeDb({"leads": [dict(LEAD_ROW)], "call_logs": [], "messages": []})
+    # dashboard.py, leads.py and lead_service.py each hold their own
+    # `get_db` reference (bound at import time) — all three need patching so
+    # a write in one lands where a read in another expects to find it.
     monkeypatch.setattr(dashboard, "get_db", lambda: fake)
+    monkeypatch.setattr(leads, "get_db", lambda: fake)
+    monkeypatch.setattr(lead_service, "get_db", lambda: fake)
     return fake
 
 
@@ -226,3 +195,136 @@ def test_a_malformed_appointment_does_not_break_the_label():
 def test_appointment_labels_render_in_the_agency_timezone():
     # 02:00 UTC is 10:00 in Kuala Lumpur
     assert "10:00 AM" in dashboard_presenter.slot_label("2026-09-01T02:00:00Z")
+
+
+# -- auth ---------------------------------------------------------------
+
+
+@pytest.mark.parametrize("path", ["/api/leads", "/api/overview", "/api/viewings", "/leads", "/calls/x"])
+def test_dashboard_and_raw_routes_reject_requests_without_a_key(db, path):
+    assert anon_client.get(path).status_code == 401
+
+
+def test_a_wrong_key_is_also_rejected(db):
+    response = TestClient(app, headers={"X-Api-Key": "wrong"}).get("/api/leads")
+    assert response.status_code == 401
+
+
+def test_bearer_token_is_accepted_as_an_alternative_to_the_header(db):
+    response = TestClient(app, headers={"Authorization": f"Bearer {API_KEY}"}).get("/api/leads")
+    assert response.status_code == 200
+
+
+# -- pagination -----------------------------------------------------------
+
+
+def test_lead_list_is_paginated_with_a_total_count_header(db):
+    db.tables["leads"] = [{**LEAD_ROW, "id": f"lead-{i}"} for i in range(5)]
+
+    response = client.get("/api/leads?limit=2&offset=1")
+
+    assert response.headers["X-Total-Count"] == "5"
+    assert len(response.json()) == 2
+
+
+# -- write actions ----------------------------------------------------------
+
+
+def test_takeover_marks_the_conversation_human_handled_and_logs_it(db):
+    lead = client.post("/api/leads/lead-1/takeover").json()
+
+    assert lead["conversationStatus"] == "human_handling"
+    assert any("human agent has joined" in m["content"] for m in lead["conversation"])
+
+
+def test_assign_sets_the_agent_name(db):
+    lead = client.post("/api/leads/lead-1/assign", json={"agentName": "Farah"}).json()
+
+    assert lead["assignedAgent"] == "Farah"
+
+
+def test_request_call_sets_call_status_to_requested(db):
+    lead = client.post("/api/leads/lead-1/calls").json()
+
+    assert lead["callStatus"] == "requested"
+
+
+def test_unknown_lead_write_actions_are_404(db):
+    assert client.post("/api/leads/nope/takeover").status_code == 404
+    assert client.post("/api/leads/nope/assign", json={"agentName": "Farah"}).status_code == 404
+    assert client.post("/api/leads/nope/calls").status_code == 404
+
+
+def test_message_persists_and_gets_an_ai_reply(db, monkeypatch):
+    monkeypatch.setattr(dashboard, "get_whatsapp_reply", lambda conversation, message: "Sure, tell me your budget.")
+
+    response = client.post("/api/leads/lead-1/messages", json={"content": "Hi, still available?"})
+    body = response.json()
+
+    assert response.status_code == 200
+    assert body["message"]["content"] == "Sure, tell me your budget."
+    assert body["message"]["sender"] == "ai"
+    contents = [m["content"] for m in body["lead"]["conversation"]]
+    assert contents == ["Hi, still available?", "Sure, tell me your budget."]
+    assert body["lead"]["conversationStatus"] == "ai_handling"
+
+
+def test_message_does_not_get_an_ai_reply_once_a_human_has_taken_over(db, monkeypatch):
+    monkeypatch.setattr(
+        dashboard,
+        "get_whatsapp_reply",
+        lambda *a, **k: pytest.fail("must not call the AI once a human owns the thread"),
+    )
+    client.post("/api/leads/lead-1/takeover")
+
+    response = client.post("/api/leads/lead-1/messages", json={"content": "Still there?"})
+    body = response.json()
+
+    assert body["message"] is None
+    contents = [m["content"] for m in body["lead"]["conversation"]]
+    assert "Still there?" in contents
+
+
+def test_message_falls_back_to_a_generic_reply_if_the_completion_call_fails(db, monkeypatch):
+    def boom(conversation, message):
+        raise RuntimeError("upstream down")
+
+    monkeypatch.setattr(dashboard, "get_whatsapp_reply", boom)
+
+    response = client.post("/api/leads/lead-1/messages", json={"content": "Hello?"})
+
+    assert response.status_code == 200
+    assert response.json()["message"]["content"]
+
+
+def test_book_viewing_confirms_and_updates_the_lead(db, monkeypatch):
+    async def fake_book_slot(**kwargs):
+        return {"start": kwargs["start"], "booking_uid": "cal-new"}
+
+    monkeypatch.setattr(dashboard.calendar_service, "book_slot", fake_book_slot)
+    db.tables["leads"] = [{**LEAD_ROW, "appointment_at": None, "status": "qualified"}]
+
+    response = client.post(
+        "/api/viewings", json={"leadId": "lead-1", "slotId": "2026-09-05T03:00:00+00:00"}
+    )
+    viewing = response.json()
+
+    assert response.status_code == 200
+    assert viewing["bookingId"] == "cal-new"
+    assert viewing["appointmentAt"] == "2026-09-05T03:00:00+00:00"
+    assert client.get("/api/leads/lead-1").json()["status"] == "booked"
+
+
+def test_book_viewing_surfaces_a_calendar_error(db, monkeypatch):
+    from app.services import calendar_service
+
+    async def fake_book_slot(**kwargs):
+        raise calendar_service.CalendarError("slot no longer available")
+
+    monkeypatch.setattr(dashboard.calendar_service, "book_slot", fake_book_slot)
+
+    response = client.post(
+        "/api/viewings", json={"leadId": "lead-1", "slotId": "2026-09-05T03:00:00+00:00"}
+    )
+
+    assert response.status_code == 502

@@ -1,7 +1,18 @@
-from fastapi import APIRouter
-from app.core.database import get_db
+from fastapi import APIRouter, Depends
 
-router = APIRouter()
+from app.config import settings
+from app.core.database import get_db
+from app.core.rate_limit import enforce
+from app.core.security import require_dashboard_auth
+
+# raw Supabase rows for debugging/back-office use — same PII as /api/leads, so
+# it gets the same auth + rate limiting.
+router = APIRouter(
+    dependencies=[
+        Depends(require_dashboard_auth),
+        Depends(enforce("dashboard", settings.RATE_LIMIT_DASHBOARD_PER_MINUTE)),
+    ],
+)
 
 
 @router.get("/leads")
