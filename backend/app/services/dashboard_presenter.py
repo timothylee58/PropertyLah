@@ -12,6 +12,7 @@ from datetime import datetime, timezone
 
 from app.models.lead import LeadStatus, LeadType
 from app.services.calendar_service import format_slot
+from app.services.money import parse_budget_max
 
 HOT_SCORE = 80
 WARM_SCORE = 60
@@ -38,8 +39,6 @@ _NEXT_ACTION = {
     "new": "Review the call and qualify the lead.",
 }
 
-_MULTIPLIER = {"k": 1_000, "m": 1_000_000}
-
 
 def mask_phone(phone: str | None) -> str:
     """`+60123456789` -> `+60 12-**** 6789`; the dashboard shows no full numbers."""
@@ -49,21 +48,6 @@ def mask_phone(phone: str | None) -> str:
     if len(digits) < 6:
         return "****"
     return f"+{digits[:4]}-**** {digits[-4:]}"
-
-
-def parse_budget_max(budget_range: str | None) -> int | None:
-    """Best-effort ringgit ceiling from free text like `RM500k-700k` or `1.2m`."""
-    if not budget_range:
-        return None
-    amounts: list[int] = []
-    # commas group thousands here, so they must be consumed with the number
-    for number, suffix in re.findall(r"(\d[\d,]*(?:\.\d+)?)\s*([kKmM]?)", budget_range):
-        try:
-            value = float(number.replace(",", ""))
-        except ValueError:
-            continue
-        amounts.append(int(value * _MULTIPLIER.get(suffix.lower(), 1)))
-    return max(amounts) if amounts else None
 
 
 def score_label(score: int) -> str:

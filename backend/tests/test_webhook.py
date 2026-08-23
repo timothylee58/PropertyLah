@@ -75,9 +75,18 @@ async def test_tool_failure_never_escapes_as_an_error(monkeypatch):
     async def explode(*args, **kwargs):
         raise RuntimeError("openclaw unreachable")
 
-    monkeypatch.setattr(voice_webhook.openclaw_tools, "get_comps", explode)
-    result = await voice_webhook.dispatch_tool("get_comps", {"area": "KLCC"}, {})
+    monkeypatch.setattr(voice_webhook.openclaw_tools, "verify_listing", explode)
+    result = await voice_webhook.dispatch_tool("verify_listing", {"property_reference": "x"}, {})
     assert "callback" in result["instruction"]
+
+
+@pytest.mark.asyncio
+async def test_comps_are_served_from_the_napic_index():
+    result = await voice_webhook.dispatch_tool(
+        "get_comps", {"area": "TTDI", "budget_range": "RM2m"}, {}
+    )
+    assert result["comps"][0]["transactions"] > 0
+    assert result["source"].startswith("NAPIC")
 
 
 def test_end_of_call_report_is_persisted(monkeypatch):

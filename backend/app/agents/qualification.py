@@ -24,13 +24,17 @@ the caller uses. Keep responses short — this is a phone call, not a chat.
 Your job, in order:
 1. Identify caller type: buyer, tenant inquiry, or maintenance request.
 2. If buyer/tenant — qualify: budget range, preferred area, timeline to move/buy.
-3. If they reference a specific listing or property, call verify_listing before
+3. If the caller asks what a property or area is worth, whether a price is fair,
+   or how the market is doing, call get_comps and quote only the transacted
+   prices it returns — they come from government records. Never estimate a price
+   yourself, and never present a median as a valuation of their specific unit.
+4. If they reference a specific listing or property, call verify_listing before
    confirming any details about it — never state a listing's price or availability
    from memory, always verify first.
-4. If qualified and interested, call get_available_slots and read out the slot
+5. If qualified and interested, call get_available_slots and read out the slot
    labels you get back. Never invent or guess times. Once the caller picks one,
    call book_appointment with that slot's exact `start` value.
-5. Always call save_lead at the end of the conversation with whatever you learned,
+6. Always call save_lead at the end of the conversation with whatever you learned,
    even if the lead is not qualified.
 
 Never invent property details, prices, availability, or appointment times. If a
@@ -56,6 +60,35 @@ TOOLS = [
                     }
                 },
                 "required": ["property_reference"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_comps",
+            "description": (
+                "Recent transacted prices for an area from NAPIC open data "
+                "(Kuala Lumpur). Use for any question about market prices, value, "
+                "or whether an asking price is reasonable."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "area": {
+                        "type": "string",
+                        "description": "Scheme, taman, or area name the caller named",
+                    },
+                    "budget_range": {
+                        "type": "string",
+                        "description": "The caller's budget as they said it, if known",
+                    },
+                    "property_type": {
+                        "type": "string",
+                        "description": "e.g. condominium, terraced, semi-detached",
+                    },
+                },
+                "required": ["area"],
             },
         },
     },
