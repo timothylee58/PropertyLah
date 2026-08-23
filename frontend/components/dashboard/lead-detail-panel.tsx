@@ -1,10 +1,11 @@
 "use client";
 
 import { Lead } from "@/lib/types";
+import { getLeadKnowledgeUsage } from "@/lib/api";
 import { cn, formatCurrency, scoreLabel, statusColor, statusLabel, conversationStatusColor, conversationStatusLabel, callStatusColor, callStatusLabel, getInitials } from "@/lib/utils";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { User, Phone, Sparkles } from "lucide-react";
+import { User, Phone, Sparkles, BookOpen } from "lucide-react";
 
 export function LeadDetailPanel({ lead }: { lead: Lead }) {
   const q = lead.qualification;
@@ -108,6 +109,44 @@ export function LeadDetailPanel({ lead }: { lead: Lead }) {
           <span className="text-sm font-medium text-stone-900">{lead.assignedAgent}</span>
         </div>
       )}
+
+      <KnowledgeUsageCard lead={lead} />
     </div>
+  );
+}
+
+function KnowledgeUsageCard({ lead }: { lead: Lead }) {
+  const usage = getLeadKnowledgeUsage(lead);
+  return (
+    <Card>
+      <CardHeader className="border-b border-stone-100 pb-4">
+        <div className="flex items-center gap-2">
+          <BookOpen className="h-4 w-4 text-emerald-600" />
+          <h2 className="text-sm font-semibold text-stone-900">Knowledge usage</h2>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4 pt-5">
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-stone-500">Sources consulted</p>
+          <div className="mt-1.5 flex flex-wrap gap-1.5">
+            {usage.sources.map((s) => (
+              <Badge key={s} variant="soft" className="rounded-md">
+                {s}
+              </Badge>
+            ))}
+          </div>
+        </div>
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-stone-500">Rules applied</p>
+          <div className="mt-1.5 flex flex-wrap gap-1.5">
+            {usage.rules.map((r) => (
+              <Badge key={r} className="rounded-md bg-teal-100 text-teal-800">
+                {r}
+              </Badge>
+            ))}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

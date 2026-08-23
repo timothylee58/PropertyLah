@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Lead } from "@/lib/types";
+import { Lead, Listing, ViewingSlot } from "@/lib/types";
 import { getConversations, sendSimulatedInboundMessage, takeOverConversation, requestAiCall, assignLead } from "@/lib/api";
 import { ConversationList } from "@/components/inbox/conversation-list";
 import { LeadIntelligencePanel } from "@/components/inbox/lead-intelligence-panel";
@@ -23,7 +23,13 @@ export default function InboxPage() {
   const [loading, setLoading] = useState(true);
   const [input, setInput] = useState("");
   const [simulating, setSimulating] = useState(false);
+  const [selectedListingId, setSelectedListingId] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  const handleSelectLead = (id: string) => {
+    setSelectedListingId(null);
+    setSelectedId(id);
+  };
 
   useEffect(() => {
     getConversations().then((data) => {
@@ -59,8 +65,25 @@ export default function InboxPage() {
 
   const handleRequestCall = async () => {
     if (!selected) return;
-    const updated = await requestAiCall(selected.id);
+    const updated = await requestAiCall(selected.id, "ai");
     if (updated) updateLead(updated);
+  };
+
+  const handleSelectListing = async (listing: Listing) => {
+    if (!selected || simulating) return;
+    setSelectedListingId(listing.id);
+    setSimulating(true);
+    const updated = await sendSimulatedInboundMessage(selected.id, `I like ${listing.name}.`);
+    if (updated) updateLead(updated);
+    setSimulating(false);
+  };
+
+  const handleSelectSlot = async (slot: ViewingSlot) => {
+    if (!selected || simulating) return;
+    setSimulating(true);
+    const updated = await sendSimulatedInboundMessage(selected.id, slot.label);
+    if (updated) updateLead(updated);
+    setSimulating(false);
   };
 
   const handleAssign = async () => {
@@ -80,7 +103,7 @@ export default function InboxPage() {
   return (
     <div className="flex h-full min-h-0 bg-stone-100/40">
       <div className="hidden w-72 flex-shrink-0 md:block">
-        <ConversationList leads={leads} selectedId={selected?.id} onSelect={setSelectedId} />
+        <ConversationList leads={leads} selectedId={selected?.id} onSelect={handleSelectLead} />
       </div>
 
       <div className="flex min-w-0 flex-1 flex-col">
@@ -106,7 +129,14 @@ export default function InboxPage() {
                 <span className="rounded-full bg-white/80 px-3 py-1 text-[10px] text-stone-500 shadow-sm">Today</span>
               </div>
               {selected.conversation.map((message) => (
-                <ChatMessage key={message.id} message={message} leadName={selected.name} />
+                <ChatMessage
+                  key={message.id}
+                  message={message}
+                  leadName={selected.name}
+                  onSelectListing={handleSelectListing}
+                  onSelectSlot={handleSelectSlot}
+                  disabled={simulating}
+                />
               ))}
               {simulating && (
                 <div className="flex justify-end">

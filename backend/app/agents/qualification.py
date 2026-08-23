@@ -2,7 +2,15 @@ from openai import OpenAI
 from app.config import settings
 
 # Qwen exposes an OpenAI-compatible endpoint via DashScope — reuse the openai SDK
-client = OpenAI(api_key=settings.QWEN_API_KEY, base_url=settings.QWEN_BASE_URL)
+_client: OpenAI | None = None
+
+
+def get_client() -> OpenAI:
+    global _client
+    if _client is None:
+        key = settings.QWEN_API_KEY if settings.QWEN_API_KEY else "not-set"
+        _client = OpenAI(api_key=key, base_url=settings.QWEN_BASE_URL)
+    return _client
 
 SYSTEM_PROMPT = """You are Ejen, a voice assistant for a Malaysian property agency.
 This call may be recorded for quality and training purposes — always disclose this
@@ -82,7 +90,7 @@ TOOLS = [
 def get_completion(messages: list[dict]) -> dict:
     """Called by the Vapi custom-LLM webhook for each conversation turn."""
     full_messages = [{"role": "system", "content": SYSTEM_PROMPT}] + messages
-    response = client.chat.completions.create(
+    response = get_client().chat.completions.create(
         model=settings.QWEN_MODEL,
         messages=full_messages,
         tools=TOOLS,
