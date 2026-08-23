@@ -1,5 +1,6 @@
 import json
 import logging
+from datetime import datetime
 
 from fastapi import APIRouter, HTTPException, Request
 
@@ -202,7 +203,17 @@ def _existing_booking(call_id: str | None, start: str) -> dict | None:
         return None
     if not lead or not lead.get("booking_uid"):
         return None
-    if lead.get("appointment_at") != start:
+    try:
+        requested_start = datetime.fromisoformat(start.replace("Z", "+00:00"))
+        stored_start = datetime.fromisoformat(
+            lead["appointment_at"].replace("Z", "+00:00")
+        )
+    except (AttributeError, TypeError, ValueError):
+        return None
+    if requested_start.tzinfo is None or stored_start.tzinfo is None:
+        if start != lead.get("appointment_at"):
+            return None
+    elif requested_start != stored_start:
         return None
     return {"booking_uid": lead["booking_uid"], "start": lead["appointment_at"]}
 

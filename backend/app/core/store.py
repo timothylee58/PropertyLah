@@ -55,12 +55,12 @@ def set_leads(leads: list[Lead]) -> None:
 
 
 def get_lead(lead_id: str) -> Lead | None:
-    return next((l for l in _leads if l.id == lead_id), None)
+    return next((lead for lead in _leads if lead.id == lead_id), None)
 
 
 def update_lead(lead: Lead) -> None:
-    for i, l in enumerate(_leads):
-        if l.id == lead.id:
+    for i, existing_lead in enumerate(_leads):
+        if existing_lead.id == lead.id:
             _leads[i] = lead
             return
     _leads.append(lead)
@@ -133,7 +133,7 @@ def get_listings() -> list[Listing]:
 
 
 def get_listing(listing_id: str) -> Listing | None:
-    return next((l for l in _listings if l.id == listing_id), None)
+    return next((listing for listing in _listings if listing.id == listing_id), None)
 
 
 def get_slots() -> list[ViewingSlot]:
