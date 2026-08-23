@@ -144,7 +144,10 @@ aisha_conversation = [
         "conversationId": "aisha-rahman",
         "sender": "ai",
         "channel": "whatsapp",
-        "content": "Hi Aisha 👋 I can help with that. Are you already pre-approved for financing, or would you be buying with cash?",
+        "content": (
+            "Hi Aisha 👋 I can help with that. Are you already pre-approved for financing, "
+            "or would you be buying with cash?"
+        ),
         "createdAt": _t(29),
         "deliveryStatus": "read",
     },
@@ -219,7 +222,10 @@ aisha_conversation = [
         "conversationId": "aisha-rahman",
         "sender": "ai",
         "channel": "whatsapp",
-        "content": "✅ Viewing confirmed for KLCC Residences tomorrow at 3:00 PM. I’ve sent the confirmation and calendar details here on WhatsApp.",
+        "content": (
+            "✅ Viewing confirmed for KLCC Residences tomorrow at 3:00 PM. I’ve sent the "
+            "confirmation and calendar details here on WhatsApp."
+        ),
         "createdAt": _t(14),
         "deliveryStatus": "read",
         "metadata": {"booking": viewings[0], "actionType": "booking"},
@@ -243,7 +249,10 @@ daniel_conversation = [
         "conversationId": "daniel-tan",
         "sender": "ai",
         "channel": "whatsapp",
-        "content": "Hi Daniel 👋 Thanks for reaching out. Are you pre-approved for financing, and when are you hoping to move?",
+        "content": (
+            "Hi Daniel 👋 Thanks for reaching out. Are you pre-approved for financing, and "
+            "when are you hoping to move?"
+        ),
         "createdAt": _t(295),
         "deliveryStatus": "read",
     },
@@ -261,7 +270,10 @@ daniel_conversation = [
         "conversationId": "daniel-tan",
         "sender": "ai",
         "channel": "whatsapp",
-        "content": "Great — I have several 3-bedroom condos in Mont Kiara within your budget. Can you share more photos?",
+        "content": (
+            "Great — I have several 3-bedroom condos in Mont Kiara within your budget. Can "
+            "you share more photos?"
+        ),
         "createdAt": _t(270),
         "deliveryStatus": "read",
         "metadata": {"listings": [listings[2]], "actionType": "listing_match"},
@@ -324,7 +336,10 @@ marcus_conversation = [
         "conversationId": "marcus-lim",
         "sender": "ai",
         "channel": "whatsapp",
-        "content": "Hi Marcus 👋 Yes — several rental units near Bukit Bintang are walking distance to MRT. What’s your monthly budget and move-in timeline?",
+        "content": (
+            "Hi Marcus 👋 Yes — several rental units near Bukit Bintang are walking distance "
+            "to MRT. What’s your monthly budget and move-in timeline?"
+        ),
         "createdAt": _t(2090),
         "deliveryStatus": "read",
     },
@@ -346,7 +361,10 @@ farah_conversation = [
         "conversationId": "farah-aziz",
         "sender": "ai",
         "channel": "whatsapp",
-        "content": "Hai Farah 👋 Boleh. Adakah anda sudah mendapat kelulusan pinjaman? Saya akan carikan pilihan rumah 4 bilik yang sesuai dengan bajet anda.",
+        "content": (
+            "Hai Farah 👋 Boleh. Adakah anda sudah mendapat kelulusan pinjaman? Saya akan "
+            "carikan pilihan rumah 4 bilik yang sesuai dengan bajet anda."
+        ),
         "createdAt": _t(115),
         "deliveryStatus": "read",
     },
@@ -375,7 +393,11 @@ leads = [
         "status": "booked",
         "conversationStatus": "ai_handling",
         "assignedAgent": "Sarah Lee",
-        "aiSummary": "Aisha is a finance-approved buyer seeking a 3-bedroom condo near KLCC or Bukit Bintang. She has a budget of RM800k and plans to move within two months. She selected KLCC Residences and confirmed a viewing tomorrow at 3:00 PM.",
+        "aiSummary": (
+            "Aisha is a finance-approved buyer seeking a 3-bedroom condo near KLCC or Bukit "
+            "Bintang. She has a budget of RM800k and plans to move within two months. She "
+            "selected KLCC Residences and confirmed a viewing tomorrow at 3:00 PM."
+        ),
         "nextBestAction": "Send property brochure before the viewing and offer an AI call for questions.",
         "callStatus": "not_requested",
         "lastActivity": aisha_conversation[-1]["createdAt"],
@@ -398,7 +420,12 @@ leads = [
             {"id": "te-a-3", "type": "qualification", "title": "Financing eligibility captured", "createdAt": _t(27)},
             {"id": "te-a-4", "type": "listing_match", "title": "Two matching listings shared", "createdAt": _t(22)},
             {"id": "te-a-5", "type": "viewing_booked", "title": "KLCC Residences selected", "createdAt": _t(18)},
-            {"id": "te-a-6", "type": "viewing_booked", "title": "Viewing confirmed: Tomorrow 3:00 PM", "createdAt": _t(14)},
+            {
+                "id": "te-a-6",
+                "type": "viewing_booked",
+                "title": "Viewing confirmed: Tomorrow 3:00 PM",
+                "createdAt": _t(14),
+            },
         ],
     },
     {
@@ -422,7 +449,10 @@ leads = [
         "status": "qualified",
         "conversationStatus": "ai_handling",
         "assignedAgent": None,
-        "aiSummary": "Daniel is a pre-approved buyer looking for a 3-bedroom condo in Mont Kiara with a budget of RM1.2M. He is asking for more photos before selecting a viewing time.",
+        "aiSummary": (
+            "Daniel is a pre-approved buyer looking for a 3-bedroom condo in Mont Kiara with "
+            "a budget of RM1.2M. He is asking for more photos before selecting a viewing time."
+        ),
         "nextBestAction": "Share additional photos and offer a viewing slot.",
         "callStatus": "not_requested",
         "lastActivity": daniel_conversation[-1]["createdAt"],
@@ -466,7 +496,10 @@ leads = [
         "status": "new",
         "conversationStatus": "ai_handling",
         "assignedAgent": "Adam Ng",
-        "aiSummary": "Nurul is a seller in Bangsar with a 3-bedroom condo and an asking price of RM1.5M. KeyNest captured the listing intent and is gathering unit details for agent review.",
+        "aiSummary": (
+            "Nurul is a seller in Bangsar with a 3-bedroom condo and an asking price of RM1.5M. "
+            "KeyNest captured the listing intent and is gathering unit details for agent review."
+        ),
         "nextBestAction": "Collect unit details and arrange a valuation appointment.",
         "callStatus": "not_requested",
         "lastActivity": nurul_conversation[-1]["createdAt"],
@@ -506,7 +539,10 @@ leads = [
         "status": "nurture",
         "conversationStatus": "ai_handling",
         "assignedAgent": None,
-        "aiSummary": "Marcus is a renter looking near Bukit Bintang around RM4.5k per month. He asked about MRT access and has not provided a timeline or budget confirmation.",
+        "aiSummary": (
+            "Marcus is a renter looking near Bukit Bintang around RM4.5k per month. He asked "
+            "about MRT access and has not provided a timeline or budget confirmation."
+        ),
         "nextBestAction": "Answer the MRT question and ask for monthly budget and move-in window.",
         "callStatus": "not_requested",
         "lastActivity": marcus_conversation[-1]["createdAt"],
@@ -546,7 +582,10 @@ leads = [
         "status": "new",
         "conversationStatus": "ai_handling",
         "assignedAgent": None,
-        "aiSummary": "Farah is looking for a 4-bedroom house in Shah Alam below RM900k. She reached out in Bahasa Melayu and KeyNest is gathering financing and timeline details.",
+        "aiSummary": (
+            "Farah is looking for a 4-bedroom house in Shah Alam below RM900k. She reached "
+            "out in Bahasa Melayu and KeyNest is gathering financing and timeline details."
+        ),
         "nextBestAction": "Confirm financing status and share 4-bedroom Shah Alam listings.",
         "callStatus": "not_requested",
         "lastActivity": farah_conversation[-1]["createdAt"],
@@ -564,8 +603,18 @@ leads = [
         "recommendedListings": [listings[3]],
         "bookedViewing": viewings[2],
         "timelineEvents": [
-            {"id": "te-f-1", "type": "inquiry", "title": "Bahasa Melayu WhatsApp inquiry received", "createdAt": _t(120)},
-            {"id": "te-f-2", "type": "viewing_booked", "title": "Viewing confirmed: Thursday 5:00 PM", "createdAt": _t(116)},
+            {
+                "id": "te-f-1",
+                "type": "inquiry",
+                "title": "Bahasa Melayu WhatsApp inquiry received",
+                "createdAt": _t(120),
+            },
+            {
+                "id": "te-f-2",
+                "type": "viewing_booked",
+                "title": "Viewing confirmed: Thursday 5:00 PM",
+                "createdAt": _t(116),
+            },
         ],
     },
 ]
@@ -649,7 +698,10 @@ agent_rules = [
     {
         "id": "rule-2",
         "title": "Do not guarantee financial or legal outcomes",
-        "instruction": "Never guarantee loan approval, investment returns, rental yield, legal outcomes, or price appreciation.",
+        "instruction": (
+            "Never guarantee loan approval, investment returns, rental yield, legal outcomes, "
+            "or price appreciation."
+        ),
         "priority": "High",
         "category": "Compliance",
         "enabled": True,
@@ -659,7 +711,10 @@ agent_rules = [
     {
         "id": "rule-3",
         "title": "Escalate regulated questions to a human",
-        "instruction": "For legal, tax, loan, deposit, contract, or other regulated questions, provide general information only and offer human-agent handoff.",
+        "instruction": (
+            "For legal, tax, loan, deposit, contract, or other regulated questions, provide "
+            "general information only and offer human-agent handoff."
+        ),
         "priority": "High",
         "category": "Escalation",
         "enabled": True,
@@ -689,7 +744,10 @@ agent_rules = [
     {
         "id": "rule-6",
         "title": "Stop autonomous qualification when human is requested",
-        "instruction": "If the customer requests a human agent, stop autonomous qualification and assign the lead to a human agent.",
+        "instruction": (
+            "If the customer requests a human agent, stop autonomous qualification and assign "
+            "the lead to a human agent."
+        ),
         "priority": "High",
         "category": "Escalation",
         "enabled": True,
