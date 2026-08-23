@@ -116,8 +116,8 @@ export default function ViewingsPage() {
                 </CardHeader>
                 <CardContent className="space-y-3 p-4">
                   <div>
-                    <p className="font-medium text-stone-900">{v.listing.name}</p>
-                    <p className="text-xs text-stone-500">{v.listing.location}</p>
+                    <p className="font-medium text-stone-900">{v.listing?.name || v.propertyReference || "Property"}</p>
+                    <p className="text-xs text-stone-500">{v.listing?.location || ""}</p>
                   </div>
                   <p className="text-sm text-stone-700">
                     Lead:{" "}
@@ -198,9 +198,9 @@ export default function ViewingsPage() {
                               "rounded px-1.5 py-0.5 text-[10px] leading-tight",
                               v.confirmed ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"
                             )}
-                            title={`${formatDate(v.appointmentAt)} — ${v.listing.name}`}
+                            title={`${formatDate(v.appointmentAt)} — ${v.listing?.name || v.propertyReference || "Property"}`}
                           >
-                            {formatTime(v.appointmentAt)} · {v.listing.name}
+                            {formatTime(v.appointmentAt)} · {v.listing?.name || v.propertyReference || "Property"}
                           </div>
                         ))}
                       </div>
