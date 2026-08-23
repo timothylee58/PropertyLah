@@ -1,9 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.routes import voice_webhook, leads, calendar, dashboard
-from app.core import store
-
-store.seed_store()
+from app.api.routes import voice_webhook, leads, calendar, market, dashboard
 
 app = FastAPI(title="Ejen — Voice AI Property Agent")
 
@@ -17,7 +14,8 @@ app.add_middleware(
 app.include_router(voice_webhook.router, tags=["voice"])
 app.include_router(leads.router, tags=["leads"])
 app.include_router(calendar.router, tags=["calendar"])
-app.include_router(dashboard.router, prefix="/api", tags=["dashboard"])
+app.include_router(market.router, tags=["market"])
+app.include_router(dashboard.router, tags=["dashboard"])
 
 
 @app.get("/health")

@@ -13,24 +13,17 @@ async def verify_listing(property_reference: str) -> dict:
                 headers={"Authorization": f"Bearer {settings.OPENCLAW_API_KEY}"},
                 json={
                     "task": f"Look up this Malaysian property listing and confirm it "
-                             f"is real and currently active: {property_reference}. "
-                             f"Return price, availability, and listing URL if found.",
+                            f"is real and currently active: {property_reference}. "
+                            f"Return price, availability, and listing URL if found.",
                 },
             )
             resp.raise_for_status()
             return resp.json()
-        except httpx.HTTPError as e:
+        except (httpx.HTTPError, ValueError) as e:
             # verification failing should never crash the call — the agent
             # is told to fall back to "let a human follow up" on failure
             return {"verified": False, "error": str(e)}
 
 
-async def get_comps(area: str, budget_range: str) -> dict:
-    async with httpx.AsyncClient(timeout=15) as client:
-        resp = await client.post(
-            f"{settings.OPENCLAW_BASE_URL}/tasks",
-            headers={"Authorization": f"Bearer {settings.OPENCLAW_API_KEY}"},
-            json={"task": f"Find 3 comparable property listings in {area} within {budget_range}."},
-        )
-        resp.raise_for_status()
-        return resp.json()
+# comps used to be another OpenClaw task; they now come from the local NAPIC
+# index in app/services/comps_service.py — real transacted prices, no timeout

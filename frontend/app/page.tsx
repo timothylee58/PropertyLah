@@ -103,7 +103,7 @@ export default function OverviewPage() {
                     onClick={() => router.push(`/viewings`)}
                     className="w-full px-5 py-3 text-left transition hover:bg-stone-50"
                   >
-                    <p className="text-sm font-medium text-stone-900">{v.listing.name}</p>
+                    <p className="text-sm font-medium text-stone-900">{v.listing?.name || v.propertyReference || "Property to be confirmed"}</p>
                     <p className="text-xs text-stone-500">{v.slot.label} · {v.confirmed ? "Confirmed" : "Pending"}</p>
                   </button>
                 ))}

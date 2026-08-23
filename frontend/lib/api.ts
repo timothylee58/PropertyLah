@@ -657,6 +657,16 @@ export interface ActivityEvent {
 }
 
 export async function getOverview(): Promise<OverviewData> {
+  if (!IS_DEMO) {
+    try {
+      const res = await fetch(`${API_BASE}/api/overview`, { cache: "no-store" });
+      if (!res.ok) throw new Error("Live overview failed");
+      return (await res.json()) as OverviewData;
+    } catch (err) {
+      console.warn("Falling back to demo overview", err);
+    }
+  }
+
   const leads = await getLeads();
   const viewings = await getViewings();
   const activities: ActivityEvent[] = [];
@@ -675,7 +685,7 @@ export async function getOverview(): Promise<OverviewData> {
     if (lead.status === "booked" && lead.bookedViewing) {
       activities.push({
         id: `act-${lead.id}-booking`,
-        title: `Viewing booked: ${lead.bookedViewing.listing.name}`,
+        title: `Viewing booked: ${lead.bookedViewing.listing?.name || lead.bookedViewing.propertyReference || "property to be confirmed"}`,
         description: `${lead.bookedViewing.slot.label}`,
         leadName: lead.name,
         leadId: lead.id,
