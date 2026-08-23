@@ -22,9 +22,39 @@ When `NEXT_PUBLIC_DEMO_MODE` is `true`, the frontend uses the mock data and simu
 
 When set to `false`, the frontend calls the backend at `NEXT_PUBLIC_API_BASE_URL`.
 
-## Suggested live endpoints
+## Implementation status
 
-The live functions live in `lib/api.ts`. You can update these paths or replace `lib/api.ts` with real fetch logic.
+The backend now serves the four read endpoints the dashboard fetches, adapted from
+the `leads` and `call_logs` tables in `backend/app/api/routes/dashboard.py`:
+
+| Endpoint | Status |
+| --- | --- |
+| `GET /api/overview` | live — counters and activity feed derived from stored leads |
+| `GET /api/leads` | live |
+| `GET /api/leads/:id` | live — the call transcript appears as a single `system` message |
+| `GET /api/viewings` | live — from leads that have an `appointment_at` |
+| `POST /api/conversations/:id/*`, `POST /api/calls`, `POST /api/viewings` | not implemented — the dashboard mutates local state only |
+
+What the voice agent cannot supply yet, and so is absent rather than faked:
+
+- **Listings.** There is no listings table; the agent records a
+  `property_reference` string, so `Viewing.listing` is optional and the UI falls
+  back to that reference.
+- **Conversations.** Phone calls yield one transcript, not a message thread, and
+  there is no WhatsApp channel yet — so `conversationStatus` is always `closed`
+  and `recommendedListings` is never populated.
+- **Qualification detail.** `budgetMax` is parsed best-effort out of the free-text
+  `budget_range`; `financing`, `propertyType` and `bedrooms` are not captured.
+- **`medianFirstResponse`** — no inbound-timestamp metric is recorded, so it
+  renders as `—`.
+
+Mapping notes: `lead_type` `tenant` → intent `renter`; statuses
+`appointment_booked` → `booked` and `disqualified`/`scam_flagged` → `nurture`;
+phone numbers are masked server-side before they reach the browser.
+
+## Endpoint reference
+
+The live functions live in `lib/api.ts`.
 
 ### 1. `GET /api/overview`
 

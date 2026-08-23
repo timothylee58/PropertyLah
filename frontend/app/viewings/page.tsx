@@ -45,8 +45,8 @@ export default function ViewingsPage() {
               </CardHeader>
               <CardContent className="space-y-3 p-4">
                 <div>
-                  <p className="font-medium text-stone-900">{v.listing.name}</p>
-                  <p className="text-xs text-stone-500">{v.listing.location}</p>
+                  <p className="font-medium text-stone-900">{v.listing?.name || v.propertyReference || "Property to be confirmed"}</p>
+                  <p className="text-xs text-stone-500">{v.listing?.location || "Location to be confirmed"}</p>
                 </div>
                 <p className="text-sm text-stone-700">Lead: <span className="font-medium">{v.leadId.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}</span></p>
                 <p className="text-xs text-stone-500">Booked via WhatsApp · {timeAgo(v.appointmentAt)}</p>

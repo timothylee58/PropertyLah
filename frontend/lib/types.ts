@@ -1,5 +1,5 @@
 export type LeadStatus = "new" | "qualified" | "booked" | "nurture";
-export type LeadIntent = "buyer" | "seller" | "renter";
+export type LeadIntent = "buyer" | "seller" | "renter" | "maintenance" | "unknown";
 export type Channel = "whatsapp" | "web" | "phone";
 export type ConversationStatus = "ai_handling" | "human_handling" | "closed";
 export type CallStatus = "not_requested" | "requested" | "scheduled" | "completed";
@@ -44,7 +44,9 @@ export interface Viewing {
   leadId: string;
   listingId: string;
   slotId: string;
-  listing: Listing;
+  /** absent for viewings booked over the phone — the agent records only a reference */
+  listing?: Listing;
+  propertyReference?: string;
   slot: ViewingSlot;
   channel?: Channel;
 }
