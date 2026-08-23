@@ -152,6 +152,30 @@ async def test_book_appointment_is_idempotent_per_call(monkeypatch):
 
 
 @pytest.mark.asyncio
+async def test_book_appointment_idempotency_compares_instants_across_timezones(
+    monkeypatch,
+):
+    monkeypatch.setattr(
+        voice_webhook.lead_service,
+        "get_lead_by_call",
+        lambda call_id: {
+            "booking_uid": "bk-1",
+            "appointment_at": "2026-09-01T02:00:00+00:00",
+        },
+    )
+
+    async def should_not_run(**kwargs):
+        raise AssertionError("a second booking was attempted")
+
+    monkeypatch.setattr(calendar_service, "book_slot", should_not_run)
+    result = await voice_webhook.book_appointment(
+        {"preferred_datetime": "2026-09-01T10:00:00+08:00"}, "call-1", None
+    )
+
+    assert result["already_booked"] is True
+
+
+@pytest.mark.asyncio
 async def test_tool_calls_batch_returns_one_result_per_call(monkeypatch):
     async def fake_slots():
         return [{"start": "2026-09-01T02:00:00Z", "label": "Tue 1 Sep, 10:00 AM"}]
