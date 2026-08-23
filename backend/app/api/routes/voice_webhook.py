@@ -7,7 +7,7 @@ from app.agents import openclaw_tools
 from app.agents.qualification import get_completion
 from app.config import settings
 from app.core.security import verify_vapi_request
-from app.services import calendar_service, lead_service
+from app.services import calendar_service, comps_service, lead_service
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -119,8 +119,10 @@ async def _dispatch_tool(name: str | None, params: dict, message: dict) -> dict:
         return await openclaw_tools.verify_listing(params.get("property_reference", ""))
 
     if name == "get_comps":
-        return await openclaw_tools.get_comps(
-            params.get("area", ""), params.get("budget_range", "")
+        return comps_service.find_comps(
+            params.get("area", ""),
+            params.get("budget_range"),
+            params.get("property_type"),
         )
 
     if name == "get_available_slots":

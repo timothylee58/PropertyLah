@@ -17,7 +17,8 @@ The frontend ships with a deterministic demo mode (no backend required). Set `NE
 
 ## Tri-tool integration
 - **Qwen** — conversation brain (`backend/app/agents/qualification.py`), BM/English/Manglish
-- **OpenClaw** — live listing verification + comps (`backend/app/agents/openclaw_tools.py`)
+- **OpenClaw** — live listing verification (`backend/app/agents/openclaw_tools.py`)
+- **NAPIC open data** — transacted comps (`backend/app/services/comps_service.py`)
 - **Devin** — used to build out the CRUD/webhook backend in parallel during the sprint
 
 ## Setup
@@ -53,6 +54,29 @@ curl localhost:8000/calendar/slots
 curl -X POST localhost:8000/calendar/book -H 'content-type: application/json' \
   -d '{"preferred_datetime":"2026-09-01T02:00:00Z","caller_name":"Test"}'
 ```
+
+### Market comps (NAPIC)
+Price questions are answered from 26,365 real Kuala Lumpur transactions
+(Jan 2021 – Mar 2026) published by NAPIC, not from a scrape or the model's memory,
+so a mid-call `get_comps` is a local dictionary hit with nothing to time out.
+
+`backend/app/data/comps_index.json` is committed and needs no setup. Rebuild it
+when NAPIC publishes a newer quarter:
+```bash
+cd backend
+python scripts/build_comps_index.py ~/Downloads/Open_Transaction_Data.csv
+```
+
+The same lookup is exposed for the dashboard and manual checks:
+```bash
+curl 'localhost:8000/market/comps?area=TTDI&property_type=terraced'
+curl 'localhost:8000/market/comps?area=KLCC&budget_range=RM1.5m'
+```
+
+Matching is deliberately forgiving, because callers and NAPIC never agree on a
+name: `TMN`/`Taman`, acronyms (`TTDI`), typos, and `KLCC` (which NAPIC files under
+`Kuala Lumpur Town Centre`) all resolve. An area with no data returns no comps and
+an instruction not to estimate — the agent never invents a price.
 
 ### Frontend
 
@@ -122,6 +146,7 @@ The frontend expects a normalized API as described in `frontend/INTEGRATION.md`.
    local `curl` testing only.
 
 ## Voice tool flow
+`get_comps` answers price questions from the NAPIC index (see above).
 `get_available_slots` → agent reads the returned `label`s → `book_appointment`
 with the chosen slot's exact `start`. Bookings are keyed on the Vapi call id, so
 a retried tool call returns the existing booking instead of double-booking, and
