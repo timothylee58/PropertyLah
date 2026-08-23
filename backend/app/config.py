@@ -22,6 +22,27 @@ class Settings:
     OPENCLAW_API_KEY = os.getenv("OPENCLAW_API_KEY", "")
     OPENCLAW_BASE_URL = os.getenv("OPENCLAW_BASE_URL", "")
 
+    # Staff dashboard — the /api/* routes in dashboard.py and the raw /leads,
+    # /calls routes in leads.py are an internal ops surface and must not be
+    # publicly readable. Unset in local dev only; production must set this.
+    DASHBOARD_API_KEY = os.getenv("DASHBOARD_API_KEY", "")
+    DASHBOARD_REQUIRE_AUTH = os.getenv("DASHBOARD_REQUIRE_AUTH", "true").lower() != "false"
+
+    # Comma-separated list of origins allowed to call this API from a browser,
+    # e.g. "https://staff.example.com,http://localhost:3000". No wildcard — the
+    # dashboard carries lead PII, so the origin allowlist must be explicit.
+    FRONTEND_ORIGINS = [
+        origin.strip()
+        for origin in os.getenv("FRONTEND_ORIGINS", "http://localhost:3000").split(",")
+        if origin.strip()
+    ]
+
+    # In-memory per-process rate limiting. Fine for a single backend instance;
+    # move to a shared store (e.g. Redis) before scaling to multiple instances.
+    RATE_LIMIT_ENABLED = os.getenv("RATE_LIMIT_ENABLED", "true").lower() != "false"
+    RATE_LIMIT_WEBHOOK_PER_MINUTE = int(os.getenv("RATE_LIMIT_WEBHOOK_PER_MINUTE", "60"))
+    RATE_LIMIT_DASHBOARD_PER_MINUTE = int(os.getenv("RATE_LIMIT_DASHBOARD_PER_MINUTE", "120"))
+
     # Cal.com — booking backend for viewings/appointments
     CAL_API_KEY = os.getenv("CAL_API_KEY", "")
     CAL_BASE_URL = os.getenv("CAL_BASE_URL", "https://api.cal.com/v2")

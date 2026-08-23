@@ -28,6 +28,21 @@ export const VAPI_WEBHOOK_SECRET = process.env.VAPI_WEBHOOK_SECRET || "";
 export const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || "";
 export const TELEGRAM_WEBHOOK_SECRET = process.env.TELEGRAM_WEBHOOK_SECRET || "";
 
+// Dashboard auth — every /api/* route except /api/health carries lead PII and
+// is gated behind this shared key (checked in proxy.ts). The browser can
+// only send back what it was given, so NEXT_PUBLIC_DASHBOARD_API_KEY (read in
+// lib/api.ts) must be set to the same value. This is a stopgap against
+// opportunistic scraping/abuse, not real per-operator authentication — that
+// key ships in the client bundle like any other NEXT_PUBLIC_ var.
+export const DASHBOARD_API_KEY = process.env.DASHBOARD_API_KEY || "";
+export const DASHBOARD_REQUIRE_AUTH = process.env.DASHBOARD_REQUIRE_AUTH !== "false";
+
+export const RATE_LIMIT_ENABLED = process.env.RATE_LIMIT_ENABLED !== "false";
+export const RATE_LIMIT_DASHBOARD_PER_MINUTE = Number(process.env.RATE_LIMIT_DASHBOARD_PER_MINUTE || "120");
+// the agent-chat route calls out to Qwen/Hermes on every request — a tighter
+// limit than the plain CRUD routes since each call has a real dollar cost
+export const RATE_LIMIT_AGENT_PER_MINUTE = Number(process.env.RATE_LIMIT_AGENT_PER_MINUTE || "30");
+
 export const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY || "";
 export const ELEVENLABS_AGENT_ID = process.env.ELEVENLABS_AGENT_ID || "";
 export const ELEVENLABS_PHONE_NUMBER_ID = process.env.ELEVENLABS_PHONE_NUMBER_ID || "";

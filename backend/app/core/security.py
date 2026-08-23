@@ -16,6 +16,8 @@ from app.config import settings
 SECRET_HEADER = "x-vapi-secret"
 SIGNATURE_HEADER = "x-vapi-signature"
 
+DASHBOARD_API_KEY_HEADER = "x-api-key"
+
 
 def _matches(provided: str, expected: str) -> bool:
     # compare_digest rejects str inputs holding non-ASCII, so compare bytes
@@ -50,3 +52,30 @@ def verify_vapi_request(request: Request, raw_body: bytes) -> None:
         return
 
     raise HTTPException(status_code=401, detail="invalid Vapi webhook credentials")
+
+
+def require_dashboard_auth(request: Request) -> None:
+    """Gate the internal ops dashboard (`/api/*`, `/leads`, `/calls`) behind a shared key.
+
+    This is a stopgap, not staff-level auth — every operator shares one key, and
+    the frontend (which has no login of its own) currently sends it from a
+    NEXT_PUBLIC_ env var, so it is visible to anyone who loads the dashboard
+    bundle. It stops opportunistic scraping/CORS abuse from the open internet;
+    replace with real per-operator sessions before this holds real customer PII
+    at scale.
+    """
+    if not settings.DASHBOARD_REQUIRE_AUTH:
+        return
+    if not settings.DASHBOARD_API_KEY:
+        raise HTTPException(
+            status_code=500,
+            detail="DASHBOARD_API_KEY is not set — set it, or set DASHBOARD_REQUIRE_AUTH=false locally",
+        )
+
+    provided = request.headers.get(DASHBOARD_API_KEY_HEADER)
+    auth_header = request.headers.get("authorization", "")
+    if not provided and auth_header.lower().startswith("bearer "):
+        provided = auth_header[7:]
+
+    if not provided or not _matches(provided, settings.DASHBOARD_API_KEY):
+        raise HTTPException(status_code=401, detail="missing or invalid dashboard API key")

@@ -72,12 +72,28 @@ def slot_label(iso_timestamp: str | None) -> str:
     return format_slot(parsed)["label"]
 
 
-def present_lead(row: dict, transcript: str | None = None) -> dict:
+def present_message(row: dict) -> dict:
+    """One `messages` row as the dashboard's `ConversationMessage`."""
+    return {
+        "id": str(row.get("id")),
+        "conversationId": str(row.get("lead_id")),
+        "sender": row.get("sender") or "system",
+        "channel": row.get("channel") or "whatsapp",
+        "content": row.get("content") or "",
+        "createdAt": row.get("created_at") or "",
+        "deliveryStatus": row.get("delivery_status") or "sent",
+        **({"metadata": row["metadata"]} if row.get("metadata") else {}),
+    }
+
+
+def present_lead(row: dict, transcript: str | None = None, messages: list[dict] | None = None) -> dict:
     """One `leads` row as the dashboard's `Lead`.
 
     `conversation` and `qualification` are always present because the UI reads
     into them unguarded; a call transcript, when we have one, is surfaced as a
-    single system message rather than being split into fake turns.
+    single system message rather than being split into fake turns. `messages`
+    are the WhatsApp-style thread from the `messages` table, when any exist —
+    see `POST /api/leads/{id}/messages`.
     """
     score = row.get("qualification_score") or 0
     status = _STATUS.get(row.get("status") or "", "new")
@@ -96,6 +112,7 @@ def present_lead(row: dict, transcript: str | None = None) -> dict:
             "content": transcript,
             "createdAt": last_activity,
         })
+    conversation.extend(present_message(m) for m in (messages or []))
 
     return {
         "id": lead_id,
@@ -113,11 +130,13 @@ def present_lead(row: dict, transcript: str | None = None) -> dict:
         "score": score,
         "scoreLabel": score_label(score),
         "status": status,
-        # a phone call is over by the time it is persisted, so no thread is live
-        "conversationStatus": "closed",
+        # a phone-only lead is closed by the time it's persisted; once a
+        # takeover/message action happens the row itself carries the real state
+        "conversationStatus": row.get("conversation_status") or "closed",
+        "assignedAgent": row.get("assigned_agent"),
         "aiSummary": row.get("notes") or "No summary captured for this call.",
         "nextBestAction": _NEXT_ACTION[status],
-        "callStatus": "completed",
+        "callStatus": row.get("call_status") or "completed",
         "lastActivity": last_activity,
         "qualification": {
             "location": area,

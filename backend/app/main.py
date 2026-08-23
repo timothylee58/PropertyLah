@@ -1,14 +1,18 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes import voice_webhook, leads, calendar, market, dashboard
+from app.config import settings
 
 app = FastAPI(title="Ejen — Voice AI Property Agent")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # tighten before any real deploy
-    allow_methods=["*"],
-    allow_headers=["*"],
+    # explicit allowlist, not "*" — the dashboard endpoints carry lead PII, so a
+    # wildcard origin would let any website script-fetch it cross-origin. Set
+    # FRONTEND_ORIGINS in the environment to the real staff dashboard URL(s).
+    allow_origins=settings.FRONTEND_ORIGINS,
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization", "X-Api-Key"],
 )
 
 app.include_router(voice_webhook.router, tags=["voice"])
