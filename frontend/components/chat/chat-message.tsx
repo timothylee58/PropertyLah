@@ -127,7 +127,7 @@ export function ChatMessage({
           </div>
         )}
 
-        {message.metadata?.booking && (
+        {message.metadata?.booking?.listing && (
           <div className="pt-1">
             <BookingConfirmation listing={message.metadata.booking.listing} slot={message.metadata.booking.slot} />
           </div>

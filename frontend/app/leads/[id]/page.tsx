@@ -121,7 +121,13 @@ export default function LeadDetailPage() {
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <ListingCard listing={lead.bookedViewing.listing} />
+                  {lead.bookedViewing.listing ? (
+                    <ListingCard listing={lead.bookedViewing.listing} />
+                  ) : (
+                    <p className="text-sm font-medium text-emerald-900">
+                      {lead.bookedViewing.propertyReference || "Property to be confirmed"}
+                    </p>
+                  )}
                   <p className="text-sm text-emerald-900">
                     <span className="font-medium">{lead.bookedViewing.slot.label}</span>
                     <span className="mx-2">·</span>
