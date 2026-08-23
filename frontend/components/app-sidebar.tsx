@@ -9,7 +9,7 @@ import { LayoutDashboard, MessageSquare, Users, Calendar, BookOpen, Settings, Sp
 
 const nav = [
   { href: "/", label: "Overview", icon: LayoutDashboard },
-  { href: "/inbox", label: "WhatsApp Inbox", icon: MessageSquare },
+  { href: "/inbox", label: "Inbox", icon: MessageSquare },
   { href: "/leads", label: "Leads", icon: Users },
   { href: "/viewings", label: "Viewings", icon: Calendar },
   { href: "/knowledge", label: "Knowledge & Rules", icon: BookOpen },

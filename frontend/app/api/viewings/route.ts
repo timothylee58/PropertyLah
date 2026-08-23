@@ -79,9 +79,10 @@ export async function POST(request: NextRequest) {
       leadScore = lead.score;
     }
 
+    const channelName = channel === "telegram" ? "Telegram" : "WhatsApp";
     return NextResponse.json({
       viewing,
-      confirmationMessage: `✅ Viewing confirmed for ${listing.name} ${slot.label.toLowerCase()}. I’ve sent the confirmation and calendar details here on WhatsApp.`,
+      confirmationMessage: `✅ Viewing confirmed for ${listing.name} ${slot.label.toLowerCase()}. I’ve sent the confirmation and calendar details here on ${channelName}.`,
       leadScore,
       leadStatus,
       nextBestAction: "Send the property brochure before the viewing and offer a follow-up call.",

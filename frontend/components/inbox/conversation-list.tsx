@@ -14,7 +14,7 @@ export function ConversationList({ leads, selectedId, onSelect }: ConversationLi
   return (
     <div className="h-full overflow-y-auto border-r border-stone-200 bg-white p-3">
       <div className="mb-4 px-2">
-        <h2 className="text-sm font-semibold text-stone-900">WhatsApp Inbox</h2>
+        <h2 className="text-sm font-semibold text-stone-900">Inbox</h2>
         <p className="text-xs text-stone-500">AI is handling {leads.filter((l) => l.conversationStatus === "ai_handling").length} active conversations</p>
       </div>
       <div className="space-y-1">

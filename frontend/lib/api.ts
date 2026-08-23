@@ -218,7 +218,7 @@ export async function sendSimulatedInboundMessage(conversationId: string, text: 
     id: `msg-${Date.now()}-${Math.random().toString(36).slice(2)}`,
     conversationId: lead.id,
     sender: "lead",
-    channel: "whatsapp",
+    channel: lead.channel,
     content: text,
     createdAt: now,
     deliveryStatus: "read",
@@ -231,7 +231,7 @@ export async function sendSimulatedInboundMessage(conversationId: string, text: 
     sessionId: lead.id,
     leadId: lead.id,
     leadName: lead.name,
-    channel: "whatsapp",
+    channel: lead.channel,
     message: text,
     conversation: lead.conversation,
     qualification: lead.qualification,
@@ -255,7 +255,7 @@ export async function sendSimulatedInboundMessage(conversationId: string, text: 
     id: `msg-${Date.now() + 1}-${Math.random().toString(36).slice(2)}`,
     conversationId: lead.id,
     sender: "ai",
-    channel: "whatsapp",
+    channel: lead.channel,
     content: response.message,
     createdAt: new Date(Date.now() + 700).toISOString(),
     deliveryStatus: "read",
@@ -452,12 +452,13 @@ export async function createViewing(req: BookingRequest): Promise<BookingRespons
       await updateLead(lead);
     }
 
+    const channelName = viewing.channel === "telegram" ? "Telegram" : "WhatsApp";
     return {
       bookingId: viewing.bookingId,
       confirmed: true,
       appointmentAt: slot.appointmentAt,
       viewing,
-      confirmationMessage: `✅ Viewing confirmed for ${listing.name} ${slot.label.toLowerCase()}. I’ve sent the confirmation and calendar details here on WhatsApp.`,
+      confirmationMessage: `✅ Viewing confirmed for ${listing.name} ${slot.label.toLowerCase()}. I’ve sent the confirmation and calendar details here on ${channelName}.`,
       leadScore: lead?.score ?? 85,
       leadStatus: "booked",
       nextBestAction: "Send the property brochure before the viewing and offer a follow-up call.",
@@ -568,7 +569,7 @@ export async function takeOverConversation(conversationId: string): Promise<Lead
     id: `msg-${Date.now()}`,
     conversationId: lead.id,
     sender: "system",
-    channel: "whatsapp",
+    channel: lead.channel,
     content: "A human agent has joined the conversation.",
     createdAt: new Date().toISOString(),
     deliveryStatus: "delivered",

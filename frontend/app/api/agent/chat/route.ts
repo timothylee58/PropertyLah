@@ -20,18 +20,17 @@ export async function POST(request: NextRequest) {
 
     let response: AgentResponse;
 
-    if (IS_DEMO) {
+    if (hasQwenConfig() || hasHermesConfig()) {
+      response = await runLiveAgent(body);
+    } else if (IS_DEMO) {
       response = await runDemoAgent(body);
     } else {
-      if (!hasQwenConfig() && !hasHermesConfig()) {
-        return NextResponse.json(
-          {
-            error: "Live agent is not configured. Enable demo mode or configure Hermes/Qwen server environment variables.",
-          },
-          { status: 503 }
-        );
-      }
-      response = await runLiveAgent(body);
+      return NextResponse.json(
+        {
+          error: "Live agent is not configured. Enable demo mode or configure Hermes/Qwen server environment variables.",
+        },
+        { status: 503 }
+      );
     }
 
     // Ensure the response always carries a session id.

@@ -111,7 +111,9 @@ export default function InboxPage() {
           <div>
             <div className="flex items-center gap-2">
               <h1 className="font-semibold text-stone-900">{selected?.name || "Select a conversation"}</h1>
-              <Badge variant="soft" className="text-[10px]">WhatsApp</Badge>
+              <Badge variant="soft" className="text-[10px]">
+                {selected?.channel === "telegram" ? "Telegram" : "WhatsApp"}
+              </Badge>
             </div>
             <p className="text-xs text-stone-500">{selected?.phoneMasked}</p>
           </div>
@@ -153,7 +155,9 @@ export default function InboxPage() {
         </div>
 
         <div className="border-t border-stone-200 bg-white p-4">
-          <div className="mb-2 text-[10px] font-medium uppercase tracking-wider text-stone-500">Simulate incoming WhatsApp message</div>
+          <div className="mb-2 text-[10px] font-medium uppercase tracking-wider text-stone-500">
+            {selected?.channel === "telegram" ? "Simulate incoming Telegram message" : "Simulate incoming WhatsApp message"}
+          </div>
           <div className="flex flex-wrap gap-2 mb-3">
             {quickChips.map((chip) => (
               <Button

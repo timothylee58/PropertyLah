@@ -310,7 +310,7 @@ export async function runDemoAgent(req: AgentChatRequest): Promise<AgentResponse
     };
     const score = calculateLeadScore(q);
     return {
-      message: `✅ Viewing confirmed for ${listing.name} ${slot.label.toLowerCase()}. I’ve sent the confirmation and calendar details here on WhatsApp.`,
+      message: `✅ Viewing confirmed for ${listing.name} ${slot.label.toLowerCase()}. I’ve sent the confirmation and calendar details here on ${channel === "telegram" ? "Telegram" : "WhatsApp"}.`,
       sessionId,
       leadId,
       qualification: q,

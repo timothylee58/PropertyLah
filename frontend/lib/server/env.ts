@@ -25,6 +25,8 @@ export const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || "";
 
 export const WHATSAPP_BUSINESS_TOKEN = process.env.WHATSAPP_BUSINESS_TOKEN || "";
 export const VAPI_WEBHOOK_SECRET = process.env.VAPI_WEBHOOK_SECRET || "";
+export const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || "";
+export const TELEGRAM_WEBHOOK_SECRET = process.env.TELEGRAM_WEBHOOK_SECRET || "";
 
 export function hasQwenConfig(): boolean {
   return Boolean(QWEN_API_KEY && QWEN_BASE_URL && QWEN_MODEL);
@@ -36,4 +38,8 @@ export function hasHermesConfig(): boolean {
 
 export function hasSupabaseConfig(): boolean {
   return Boolean(SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY);
+}
+
+export function hasTelegramConfig(): boolean {
+  return Boolean(TELEGRAM_BOT_TOKEN);
 }

@@ -7,7 +7,7 @@ export interface ToolContext {
   sessionId: string;
   leadId?: string;
   leadName?: string;
-  channel?: "whatsapp" | "web" | "phone";
+  channel?: "whatsapp" | "telegram" | "web" | "phone";
   qualification: Qualification;
   conversation: ConversationMessage[];
 }
@@ -68,7 +68,7 @@ export const TOOL_DEFINITIONS = [
           lead_id: { type: "string" },
           listing_id: { type: "string" },
           slot_id: { type: "string" },
-          channel: { type: "string", enum: ["whatsapp", "web", "phone"] },
+          channel: { type: "string", enum: ["whatsapp", "telegram", "web", "phone"] },
         },
         required: ["lead_id", "listing_id", "slot_id"],
       },

@@ -32,6 +32,8 @@ SUPABASE_URL=
 SUPABASE_SERVICE_ROLE_KEY=
 GOOGLE_CALENDAR_ID=
 VAPI_WEBHOOK_SECRET=
+TELEGRAM_BOT_TOKEN=
+TELEGRAM_WEBHOOK_SECRET=
 ```
 
 - `NEXT_PUBLIC_DEMO_MODE=true` forces demo data and simulated agent responses.
@@ -75,11 +77,13 @@ Same-origin Next.js App Router routes (all in `frontend/app/api/`):
 - `GET /api/agent/rules` and `POST /api/agent/rules` — agent rule list/create.
 - `PATCH /api/agent/rules/:id` and `DELETE /api/agent/rules/:id` — update/delete.
 - `POST /api/knowledge/test` — knowledge-base test query.
+- `POST /api/telegram/webhook?secret=...` — receive Telegram bot messages and reply.
 
-## Voice / WhatsApp
+## Voice / WhatsApp / Telegram
 
-- Demo mode does not send real WhatsApp messages or place real calls.
+- Demo mode does not send real WhatsApp, Telegram, or voice messages.
 - WhatsApp/voice provider tokens must be server-only and are not activated automatically.
+- Telegram bot token and webhook secret are server-only. Set the webhook at `https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/setWebhook?url=<DEPLOY_URL>/api/telegram/webhook?secret=<TELEGRAM_WEBHOOK_SECRET>`.
 - Vapi configuration stub is in `voice-config/vapi_assistant.json`.
 
 ## Verification
