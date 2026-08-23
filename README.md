@@ -10,7 +10,8 @@ Built for the Devin × Claw Collective × Qwen "AI for a Better Malaysia" hackat
 
 No credentials are required for the deterministic demo:
 
-- `/` — Command Center / Overview
+- `/` — Marketing landing page
+- `/dashboard` — Command Center / Overview
 - `/inbox` — WhatsApp Inbox Monitor
 - `/leads` — Lead CRM
 - `/leads/:id` — Lead Detail & Conversation Intelligence
@@ -104,7 +105,7 @@ For production persistence, set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`, 
 
 ## Demo / judge click path
 
-1. Open `/` to see the live overview, activity feed, and pipeline.
+1. Open `/` to see the marketing landing page, then click **Get Started** to open `/dashboard`.
 2. Open `/inbox` and click **Aisha Rahman**.
 3. View the seeded WhatsApp conversation with qualification, listing cards, and a confirmed viewing.
 4. Send the demo message "CALL" and click **Request AI Call** to see the call status update.
@@ -133,6 +134,17 @@ npm run build
 - **Calendar:** Viewing bookings create CRM records. A real calendar event requires a Google Calendar service account or Cal.com integration.
 - **Inventory:** Listings come from the seeded agency inventory. Property-portal scraping is not implemented and not planned.
 - **Financial/legal advice:** The agent only provides general information and offers human handoff. It never guarantees loan approval, investment returns, rental yield, price appreciation, or legal outcomes.
+
+## Documentation
+
+Pitch and technical documentation lives in `docs/`:
+
+- `docs/PRD.md` — Product Requirements Document
+- `docs/ARCHITECTURE.md` — System design, deployment, and data model
+- `docs/PITCH.md` — One-page pitch deck
+- `docs/ROADMAP.md` — Delivery roadmap and feature backlog
+- `docs/DEMO_GUIDE.md` — Judge/demo click script
+- `docs/DIAGRAMS.md` — Mermaid diagram library
 
 ## Vercel deployment
 

@@ -13,6 +13,14 @@
   - `npm run lint` (`eslint . --ext .js,.jsx,.ts,.tsx`)
 - **Build output:** `next.config.mjs` uses `images: { unoptimized: true }` for simple static/Vercel deployment.
 
+## Frontend routes
+
+- `/` — Marketing landing page (no app chrome).
+- `/dashboard` — Command Center / Overview (moved from the previous `/`).
+- `/inbox`, `/leads`, `/leads/:id`, `/viewings`, `/knowledge`, `/settings` — App pages with sidebar.
+
+The root layout uses `usePathname` to hide the sidebar and mobile header on the marketing landing page.
+
 ## Environment variables
 
 Create `frontend/.env.local` (never commit it):

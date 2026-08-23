@@ -8,7 +8,7 @@ import { IS_DEMO } from "@/lib/api";
 import { LayoutDashboard, MessageSquare, Users, Calendar, BookOpen, Settings, Sparkles, CheckCircle, ChevronLeft, ChevronRight } from "lucide-react";
 
 const nav = [
-  { href: "/", label: "Overview", icon: LayoutDashboard },
+  { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
   { href: "/inbox", label: "Inbox", icon: MessageSquare },
   { href: "/leads", label: "Leads", icon: Users },
   { href: "/viewings", label: "Viewings", icon: Calendar },
