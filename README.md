@@ -138,3 +138,5 @@ demo beats a flaky live call in front of judges.
 - `openclaw_tools.py` — endpoint/schema is a guess, adjust to whatever
   OpenClaw hands out on the day
 - `vapi_assistant.json` — voice ID, backend URLs
+
+Built for Devin X Claw Collective X Qwen Hackathon 2026: Build with AI Agents - https://clawcollective.dev/hackathon/?utm_source=luma#stack
