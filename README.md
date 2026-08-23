@@ -1,8 +1,16 @@
-# Ejen — Voice AI Property Agent
+# KeyNest AI — Property Agent OS
 
-24/7 voice AI for property agents/PM firms: qualifies leads, verifies listings
-before discussing them, books appointments. Built for the Devin × Claw
-Collective × Qwen "AI for a Better Malaysia" hackathon.
+A demo-ready Next.js frontend for an AI-powered real-estate lead qualification and viewing-booking agent, localized for Malaysia. Qualifies leads, matches listings, and books viewings through a polished text-chat experience.
+
+Built for the Devin × Claw Collective × Qwen "AI for a Better Malaysia" hackathon.
+
+## Demo
+
+- `/` — AI Property Concierge (chat demo)
+- `/dashboard` — CRM lead dashboard
+- `/leads/:id` — lead detail & conversation transcript
+
+The frontend ships with a deterministic demo mode (no backend required). Set `NEXT_PUBLIC_DEMO_MODE=true` to run the full KLCC condo qualification and booking flow.
 
 ## Tri-tool integration
 - **Qwen** — conversation brain (`backend/app/agents/qualification.py`), BM/English/Manglish
@@ -24,16 +32,33 @@ uvicorn app.main:app --reload
 Run `supabase/schema.sql` in the Supabase SQL editor for your project.
 
 ### Frontend
+
 ```bash
 cd frontend
-npx create-next-app@latest . --typescript --tailwind --eslint --app --import-alias "@/*" --yes
-npx shadcn@latest init -y
 npm install
 npm run dev
 ```
-(This scaffold provides `app/page.tsx`, `app/calls/[id]/page.tsx`, and
-`lib/api.ts` — drop them in after `create-next-app` runs, it will prompt to
-overwrite `app/page.tsx`.)
+
+Open [http://localhost:3000](http://localhost:3000).
+
+The app starts in **demo mode** via `NEXT_PUBLIC_DEMO_MODE=true` in `.env.local`.
+
+To switch to the live backend:
+
+```bash
+NEXT_PUBLIC_DEMO_MODE=false
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
+```
+
+Then restart the dev server.
+
+To deploy to Vercel:
+
+```bash
+npm run build
+```
+
+See `frontend/INTEGRATION.md` for the full API contract for Person A.
 
 ### Vapi
 1. Create an assistant in the Vapi dashboard, or POST `voice-config/vapi_assistant.json`
