@@ -34,6 +34,22 @@ function apiPath(path: string): string {
   return `${base}/api${path}`;
 }
 
+// The backend's proxy.ts gates every /api/* route (except /api/health)
+// behind a shared key. This is a stopgap, not real per-operator auth — see
+// the caveat in frontend/INTEGRATION.md and lib/server/env.ts.
+function authHeaders(): Record<string, string> {
+  const key =
+    typeof process !== "undefined" ? process.env?.NEXT_PUBLIC_DASHBOARD_API_KEY : undefined;
+  return key ? { "X-Api-Key": key } : {};
+}
+
+async function fetchApi(url: string, init: RequestInit = {}): Promise<Response> {
+  return fetch(url, {
+    ...init,
+    headers: { ...authHeaders(), ...(init.headers as Record<string, string> | undefined) },
+  });
+}
+
 export const IS_DEMO =
   typeof process !== "undefined" && process.env?.NEXT_PUBLIC_DEMO_MODE
     ? process.env.NEXT_PUBLIC_DEMO_MODE !== "false"
@@ -171,7 +187,7 @@ export interface HealthCheckResult {
 
 export async function healthCheck(): Promise<HealthCheckResult> {
   try {
-    const res = await fetch(apiPath("/health"), { cache: "no-store" });
+    const res = await fetchApi(apiPath("/health"), { cache: "no-store" });
     if (!res.ok) throw new Error("Health check failed");
     return (await res.json()) as HealthCheckResult;
   } catch (err) {
@@ -197,7 +213,7 @@ function scoreLabelFromScore(score: number): "Hot" | "Warm" | "Nurture" {
 }
 
 export async function sendAgentMessage(req: AgentChatRequest): Promise<AgentResponse> {
-  const res = await fetch(apiPath("/agent/chat"), {
+  const res = await fetchApi(apiPath("/agent/chat"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(req),
@@ -377,7 +393,7 @@ export async function searchListings(filter: {
 }): Promise<Listing[]> {
   if (IS_DEMO) return listings;
   try {
-    const res = await fetch(apiPath("/listings/search"), {
+    const res = await fetchApi(apiPath("/listings/search"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(filter),
@@ -401,7 +417,7 @@ export async function getViewingSlots(leadId?: string, listingId?: string): Prom
     const params = new URLSearchParams();
     if (leadId) params.set("leadId", leadId);
     if (listingId) params.set("listingId", listingId);
-    const res = await fetch(apiPath(`/viewings/slots?${params.toString()}`), { cache: "no-store" });
+    const res = await fetchApi(apiPath(`/viewings/slots?${params.toString()}`), { cache: "no-store" });
     if (!res.ok) throw new Error("Live slots failed");
     const data = (await res.json()) as { slots: ViewingSlot[] };
     return data.slots;
@@ -465,7 +481,7 @@ export async function createViewing(req: BookingRequest): Promise<BookingRespons
   }
 
   try {
-    const res = await fetch(apiPath("/viewings"), {
+    const res = await fetchApi(apiPath("/viewings"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(req),
@@ -488,7 +504,7 @@ export async function getLeads(): Promise<Lead[]> {
     return loadLeads();
   }
   try {
-    const res = await fetch(apiPath("/leads"), { cache: "no-store" });
+    const res = await fetchApi(apiPath("/leads"), { cache: "no-store" });
     if (!res.ok) throw new Error("Live leads failed");
     return (await res.json()) as Lead[];
   } catch (err) {
@@ -502,7 +518,7 @@ export async function getLead(id: string): Promise<Lead | null> {
     return loadLeads().find((l) => l.id === id) || null;
   }
   try {
-    const res = await fetch(apiPath(`/leads/${id}`), { cache: "no-store" });
+    const res = await fetchApi(apiPath(`/leads/${id}`), { cache: "no-store" });
     if (!res.ok) throw new Error("Live lead failed");
     return (await res.json()) as Lead;
   } catch (err) {
@@ -514,7 +530,7 @@ export async function getLead(id: string): Promise<Lead | null> {
 export async function updateLead(updated: Lead): Promise<Lead> {
   if (!IS_DEMO) {
     try {
-      const res = await fetch(apiPath(`/leads/${updated.id}`), {
+      const res = await fetchApi(apiPath(`/leads/${updated.id}`), {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updated),
@@ -550,7 +566,7 @@ export async function getViewings(): Promise<Viewing[]> {
     return loadViewings();
   }
   try {
-    const res = await fetch(apiPath("/viewings"), { cache: "no-store" });
+    const res = await fetchApi(apiPath("/viewings"), { cache: "no-store" });
     if (!res.ok) throw new Error("Live viewings failed");
     return (await res.json()) as Viewing[];
   } catch (err) {
@@ -606,7 +622,7 @@ export async function requestAiCall(leadId: string, callType: "ai" | "human" = "
 
   if (!IS_DEMO) {
     try {
-      const res = await fetch(apiPath(`/leads/${leadId}/call-request`), {
+      const res = await fetchApi(apiPath(`/leads/${leadId}/call-request`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ callType, listingId }),
@@ -659,7 +675,7 @@ export interface ActivityEvent {
 export async function getOverview(): Promise<OverviewData> {
   if (!IS_DEMO) {
     try {
-      const res = await fetch(`${API_BASE}/api/overview`, { cache: "no-store" });
+      const res = await fetchApi(apiPath("/overview"), { cache: "no-store" });
       if (!res.ok) throw new Error("Live overview failed");
       return (await res.json()) as OverviewData;
     } catch (err) {
@@ -748,7 +764,7 @@ export async function getKnowledgeSources(): Promise<KnowledgeSource[]> {
     return loadKnowledgeSources();
   }
   try {
-    const res = await fetch(apiPath("/knowledge/sources"), { cache: "no-store" });
+    const res = await fetchApi(apiPath("/knowledge/sources"), { cache: "no-store" });
     if (!res.ok) throw new Error("Live knowledge sources failed");
     return (await res.json()) as KnowledgeSource[];
   } catch (err) {
@@ -818,7 +834,7 @@ export async function uploadKnowledgeSource(
   if (metadata?.category) formData.append("category", metadata.category);
   if (metadata?.scope) formData.append("scope", metadata.scope);
   try {
-    const res = await fetch(apiPath("/knowledge/sources"), {
+    const res = await fetchApi(apiPath("/knowledge/sources"), {
       method: "POST",
       body: formData,
     });
@@ -843,7 +859,7 @@ export async function updateKnowledgeSource(
     return sources[idx];
   }
   try {
-    const res = await fetch(apiPath(`/knowledge/sources/${id}`), {
+    const res = await fetchApi(apiPath(`/knowledge/sources/${id}`), {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(updates),
@@ -867,7 +883,7 @@ export async function deleteKnowledgeSource(id: string): Promise<boolean> {
     return true;
   }
   try {
-    const res = await fetch(apiPath(`/knowledge/sources/${id}`), { method: "DELETE" });
+    const res = await fetchApi(apiPath(`/knowledge/sources/${id}`), { method: "DELETE" });
     return res.ok;
   } catch (err) {
     console.warn("Falling back to demo knowledge delete", err);
@@ -881,7 +897,7 @@ export async function getAgentRules(): Promise<AgentRule[]> {
     return loadAgentRules();
   }
   try {
-    const res = await fetch(apiPath("/agent/rules"), { cache: "no-store" });
+    const res = await fetchApi(apiPath("/agent/rules"), { cache: "no-store" });
     if (!res.ok) throw new Error("Live agent rules failed");
     return (await res.json()) as AgentRule[];
   } catch (err) {
@@ -905,7 +921,7 @@ export async function createAgentRule(rule: Omit<AgentRule, "id" | "createdAt" |
     return newRule;
   }
   try {
-    const res = await fetch(apiPath("/agent/rules"), {
+    const res = await fetchApi(apiPath("/agent/rules"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(rule),
@@ -931,7 +947,7 @@ export async function updateAgentRule(
     return rules[idx];
   }
   try {
-    const res = await fetch(apiPath(`/agent/rules/${id}`), {
+    const res = await fetchApi(apiPath(`/agent/rules/${id}`), {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(updates),
@@ -951,7 +967,7 @@ export async function deleteAgentRule(id: string): Promise<boolean> {
     return true;
   }
   try {
-    const res = await fetch(apiPath(`/agent/rules/${id}`), { method: "DELETE" });
+    const res = await fetchApi(apiPath(`/agent/rules/${id}`), { method: "DELETE" });
     return res.ok;
   } catch (err) {
     console.warn("Falling back to demo delete rule", err);
@@ -962,7 +978,7 @@ export async function deleteAgentRule(id: string): Promise<boolean> {
 export async function testKnowledgeAgent(query: string): Promise<KnowledgeTestResult> {
   if (!IS_DEMO) {
     try {
-      const res = await fetch(apiPath("/knowledge/test"), {
+      const res = await fetchApi(apiPath("/knowledge/test"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query }),

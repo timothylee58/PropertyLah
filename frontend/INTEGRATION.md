@@ -192,9 +192,16 @@ Then rebuild/redeploy:
 npm run build
 ```
 
+## Auth, rate limiting, and pagination
+
+`proxy.ts` (Next's middleware convention as of v16) gates every `/api/*` route except `/api/health`:
+
+- **Auth** — requires an `X-Api-Key` header (or `Authorization: Bearer <key>`) matching `DASHBOARD_API_KEY`. The browser can only send back what it was given, so `NEXT_PUBLIC_DASHBOARD_API_KEY` must be set to the same value — `lib/api.ts` attaches it to every request. This is a stopgap against opportunistic scraping/abuse, **not real per-operator authentication** — that key ships in the client bundle like any other `NEXT_PUBLIC_` var. Put real staff login in front of this dashboard before it holds production customer data at any scale. Set `DASHBOARD_REQUIRE_AUTH=false` to disable for local dev without a key configured.
+- **Rate limiting** — a per-IP, in-memory, fixed-window limiter (`lib/server/rate-limit.ts`). `RATE_LIMIT_DASHBOARD_PER_MINUTE` (default 120) covers the CRUD routes; `RATE_LIMIT_AGENT_PER_MINUTE` (default 30) is tighter for `/api/agent/chat` since each call has a real Qwen/Hermes API cost. It's per-process — each serverless instance has its own counter — so treat it as a soft cap, not a hard one, until it's backed by a shared store (e.g. Upstash Redis).
+- **Pagination** — `GET /api/leads` accepts `?limit=&offset=` (default limit 200, max 500) and returns the true total via an `X-Total-Count` header, instead of returning every lead unbounded.
+
 ## Notes
 
-- The frontend does not require authentication.
-- Do not expose secret keys in `NEXT_PUBLIC_` variables; those are embedded in the client bundle.
+- Do not expose secret keys in `NEXT_PUBLIC_` variables beyond `NEXT_PUBLIC_DASHBOARD_API_KEY` above; those are embedded in the client bundle.
 - In live mode, failures return honest HTTP errors and do **not** silently fall back to mock data.
 - Phone numbers are masked in demo mode (`+60 12-**** 4821`); production should mask PII in the dashboard.
