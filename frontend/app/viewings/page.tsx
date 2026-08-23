@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Viewing } from "@/lib/types";
 import { getViewings, getLeads } from "@/lib/api";
-import { formatDate, timeAgo, cn } from "@/lib/utils";
+import { formatDate, cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CalendarCheck, ChevronLeft, ChevronRight, Clock, LayoutGrid, List } from "lucide-react";
@@ -73,7 +73,7 @@ export default function ViewingsPage() {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h1 className="text-2xl font-semibold text-stone-900">Viewings</h1>
-            <p className="text-sm text-stone-500">Appointments booked by KeyNest through WhatsApp.</p>
+            <p className="text-sm text-stone-500">Appointments booked by PropertyLah through WhatsApp.</p>
           </div>
           <div className="flex items-center gap-1 rounded-lg border border-stone-200 bg-white p-1">
             <button
@@ -125,7 +125,7 @@ export default function ViewingsPage() {
                       {v.leadId.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
                     </span>
                   </p>
-                  <p className="text-xs text-stone-500">Booked via WhatsApp · {timeAgo(v.appointmentAt)}</p>
+                  <p className="text-xs text-stone-500">Booked via WhatsApp · {v.confirmed ? "Confirmed" : "Pending"}</p>
                 </CardContent>
               </Card>
             ))}

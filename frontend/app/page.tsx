@@ -33,12 +33,23 @@ export default function OverviewPage() {
     .filter((l) => l.status === "booked" || l.status === "qualified" || l.status === "new")
     .slice(0, 3);
 
+  const handleReset = () => {
+    if (typeof window === "undefined") return;
+    if (window.confirm("Reset all demo data to the original seed state?")) {
+      localStorage.removeItem("keynest-leads-v2");
+      localStorage.removeItem("keynest-viewings-v1");
+      localStorage.removeItem("keynest-knowledge-sources-v1");
+      localStorage.removeItem("keynest-agent-rules-v1");
+      window.location.reload();
+    }
+  };
+
   return (
     <div className="min-h-full bg-warm-50 p-4 pb-10 sm:p-6 lg:p-8">
       <div className="mx-auto max-w-7xl space-y-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-semibold text-stone-900">Good afternoon, KeyNest Team</h1>
+            <h1 className="text-2xl font-semibold text-stone-900">Good afternoon, PropertyLah Team</h1>
             <p className="text-sm text-stone-500">Your WhatsApp property concierge is qualifying leads and booking viewings.</p>
           </div>
           <div className="flex items-center gap-3">
@@ -46,6 +57,11 @@ export default function OverviewPage() {
               <span className={cn("mr-1 inline-block h-1.5 w-1.5 rounded-full", IS_DEMO ? "bg-amber-500" : "bg-emerald-500")}></span>
               {IS_DEMO ? "WhatsApp Demo" : "WhatsApp Connected"}
             </Badge>
+            {IS_DEMO && (
+              <Button variant="outline" onClick={handleReset}>
+                Reset demo data
+              </Button>
+            )}
             <Button onClick={() => router.push("/inbox")}>
               Open Inbox
               <ArrowRight className="ml-2 h-4 w-4" />

@@ -67,15 +67,29 @@ export default function SettingsPage() {
       : "Connected to live services and AI providers.";
 
   const aiStatus =
-    health && (health.qwenConfigured || health.hermesConfigured)
-      ? "Configured"
-      : "Not configured";
+    mode === "demo"
+      ? "Demo"
+      : health && (health.qwenConfigured || health.hermesConfigured)
+        ? "Configured"
+        : "Not configured";
   const telegramStatus =
-    health && health.telegramConfigured ? "Configured" : "Not configured";
+    mode === "demo"
+      ? "Demo"
+      : health && health.telegramConfigured
+        ? "Configured"
+        : "Not configured";
   const voiceStatus =
-    health && health.elevenLabsConfigured ? "Configured" : "Not configured";
+    mode === "demo"
+      ? "Demo"
+      : health && health.elevenLabsConfigured
+        ? "Configured"
+        : "Not configured";
   const storageStatus =
-    health && health.supabaseConfigured ? "Connected" : "Not connected";
+    mode === "demo"
+      ? "Demo"
+      : health && health.supabaseConfigured
+        ? "Connected"
+        : "Not connected";
 
   const integrations = [
     {

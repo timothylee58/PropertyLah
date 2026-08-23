@@ -498,7 +498,7 @@ leads = [
         "assignedAgent": "Adam Ng",
         "aiSummary": (
             "Nurul is a seller in Bangsar with a 3-bedroom condo and an asking price of RM1.5M. "
-            "KeyNest captured the listing intent and is gathering unit details for agent review."
+            "PropertyLah captured the listing intent and is gathering unit details for agent review."
         ),
         "nextBestAction": "Collect unit details and arrange a valuation appointment.",
         "callStatus": "not_requested",
@@ -584,7 +584,7 @@ leads = [
         "assignedAgent": None,
         "aiSummary": (
             "Farah is looking for a 4-bedroom house in Shah Alam below RM900k. She reached "
-            "out in Bahasa Melayu and KeyNest is gathering financing and timeline details."
+            "out in Bahasa Melayu and PropertyLah is gathering financing and timeline details."
         ),
         "nextBestAction": "Confirm financing status and share 4-bedroom Shah Alam listings.",
         "callStatus": "not_requested",

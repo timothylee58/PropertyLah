@@ -208,7 +208,7 @@ export default function KnowledgePage() {
           <div>
             <h1 className="text-2xl font-semibold text-stone-900">Knowledge & Rules</h1>
             <p className="text-sm text-stone-500">
-              Control what KeyNest knows, what it can say, and when it must involve a human.
+              Control what PropertyLah knows, what it can say, and when it must involve a human.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -398,7 +398,7 @@ export default function KnowledgePage() {
           <CardHeader className="border-b border-emerald-100/50 pb-4">
             <div className="flex items-center gap-2">
               <MessageSquare className="h-4 w-4 text-emerald-700" />
-              <h2 className="text-sm font-semibold text-emerald-900">Test KeyNest against your knowledge base</h2>
+              <h2 className="text-sm font-semibold text-emerald-900">Test PropertyLah against your knowledge base</h2>
             </div>
             <p className="text-xs text-emerald-800/70">Verify answers before enabling them for WhatsApp leads.</p>
           </CardHeader>

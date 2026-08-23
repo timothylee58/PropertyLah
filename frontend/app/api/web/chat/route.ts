@@ -63,10 +63,10 @@ export async function POST(request: NextRequest) {
     };
 
     let response;
-    if (hasQwenConfig() || hasHermesConfig()) {
-      response = await runLiveAgent(agentReq);
-    } else if (IS_DEMO) {
+    if (IS_DEMO) {
       response = await runDemoAgent(agentReq);
+    } else if (hasQwenConfig() || hasHermesConfig()) {
+      response = await runLiveAgent(agentReq);
     } else {
       return NextResponse.json(
         {

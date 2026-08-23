@@ -187,7 +187,7 @@ export async function runDemoAgent(req: AgentChatRequest): Promise<AgentResponse
   if (lower === "call" || (lower.includes("call") && !lower.includes("recall") && !lower.includes("called"))) {
     return {
       message:
-        "Sure — I can arrange a quick call to answer questions about your selection. Would you prefer KeyNest AI or a human property consultant?",
+        "Sure — I can arrange a quick call to answer questions about your selection. Would you prefer PropertyLah AI or a human property consultant?",
       sessionId,
       leadId,
       actions: ["call_request"],
@@ -242,7 +242,7 @@ export async function runDemoAgent(req: AgentChatRequest): Promise<AgentResponse
     const q = updateQualification(qualification, message);
     return {
       message:
-        "Hai, saya Sara dari KeyNest AI! Boleh. Berapakah bajet anda, dan adakah anda sudah mendapat kelulusan pinjaman? Saya juga boleh cadangkan unit dan aturkan sesi lawatan.",
+        "Hai, saya Sara dari PropertyLah AI! Boleh. Berapakah bajet anda, dan adakah anda sudah mendapat kelulusan pinjaman? Saya juga boleh cadangkan unit dan aturkan sesi lawatan.",
       sessionId,
       leadId,
       qualification: q,
@@ -380,7 +380,7 @@ export async function runDemoAgent(req: AgentChatRequest): Promise<AgentResponse
   // Stage-based qualification questions
   if (!q.budgetMax) {
     return {
-      message: `Hi ${leadName.includes(" ") ? leadName.split(" ")[0] : leadName} 👋 I’m Sara from KeyNest AI. I can help with that. What’s your budget, and how many bedrooms are you looking for?`,
+      message: `Hi ${leadName.includes(" ") ? leadName.split(" ")[0] : leadName} 👋 I’m Sara from PropertyLah AI. I can help with that. What’s your budget, and how many bedrooms are you looking for?`,
       sessionId,
       leadId,
       qualification: q,

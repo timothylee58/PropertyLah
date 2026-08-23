@@ -100,7 +100,7 @@ async function buildSystemPrompt(ctx: ToolContext): Promise<string> {
   const sources = await listKnowledgeCitations();
   const listings = store.getListings().filter((l) => l.status === "available").slice(0, 6);
 
-  return `You are Sara, the KeyNest AI property concierge for licensed Malaysian real-estate agencies.
+  return `You are Sara, the PropertyLah AI property concierge for licensed Malaysian real-estate agencies.
 
 Your job:
 - Qualify leads by asking one question at a time about budget, financing, preferred area, property type, bedrooms, and timeline.

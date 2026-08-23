@@ -35,7 +35,9 @@ export const TELEGRAM_WEBHOOK_SECRET = process.env.TELEGRAM_WEBHOOK_SECRET || ""
 // opportunistic scraping/abuse, not real per-operator authentication — that
 // key ships in the client bundle like any other NEXT_PUBLIC_ var.
 export const DASHBOARD_API_KEY = process.env.DASHBOARD_API_KEY || "";
-export const DASHBOARD_REQUIRE_AUTH = process.env.DASHBOARD_REQUIRE_AUTH !== "false";
+export const DASHBOARD_REQUIRE_AUTH = process.env.DASHBOARD_REQUIRE_AUTH
+  ? process.env.DASHBOARD_REQUIRE_AUTH !== "false"
+  : Boolean(DASHBOARD_API_KEY);
 
 export const RATE_LIMIT_ENABLED = process.env.RATE_LIMIT_ENABLED !== "false";
 export const RATE_LIMIT_DASHBOARD_PER_MINUTE = Number(process.env.RATE_LIMIT_DASHBOARD_PER_MINUTE || "120");

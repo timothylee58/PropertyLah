@@ -36,11 +36,14 @@ export default function LeadDetailPage() {
 
   const handleRequestCall = async () => {
     if (!lead) return;
+    const confirmed =
+      typeof window !== "undefined" &&
+      window.confirm(
+        `Request an AI call for ${lead.name}?\n\nDemo mode records the request in the CRM; no real phone call is placed.`
+      );
+    if (!confirmed) return;
     const updated = await requestAiCall(lead.id);
     if (updated) setLead(updated);
-    if (IS_DEMO && typeof window !== "undefined") {
-      window.open(`/call?leadId=${lead.id}`, "_blank", "noopener,noreferrer");
-    }
   };
 
   const handleAssign = async () => {

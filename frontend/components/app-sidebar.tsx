@@ -73,7 +73,7 @@ export function AppSidebar({ className, collapsed: controlled, onToggle }: AppSi
         </div>
         {!isCollapsed && (
           <div>
-            <h1 className="text-base font-semibold leading-tight text-stone-900">KeyNest AI</h1>
+            <h1 className="text-base font-semibold leading-tight text-stone-900">PropertyLah AI</h1>
             <p className="text-[10px] font-medium uppercase tracking-wider text-stone-500">Property Agent OS</p>
           </div>
         )}

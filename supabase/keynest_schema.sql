@@ -1,4 +1,4 @@
--- KeyNest AI — Next.js live-mode schema
+-- PropertyLah AI — Next.js live-mode schema
 -- Run this in the Supabase SQL editor when using live mode.
 
 -- Drop tables only if you are recreating a fresh environment.

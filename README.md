@@ -1,6 +1,6 @@
-# KeyNest AI — WhatsApp-first Property Concierge
+# PropertyLah AI — WhatsApp-first Property Concierge
 
-**KeyNest AI is a WhatsApp-first property concierge with an internal agency monitoring platform.**
+**PropertyLah AI is a WhatsApp-first property concierge with an internal agency monitoring platform.**
 
 It uses a server-side AI agent to handle WhatsApp inquiries, qualify leads, match approved listings, apply agency rules, cite knowledge sources, offer viewing slots, book viewings, and update the CRM — with an internal dashboard for agency staff to monitor and take over conversations.
 

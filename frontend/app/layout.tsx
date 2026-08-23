@@ -37,7 +37,7 @@ export default function RootLayout({
             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-teal-700 text-white">
               <span className="text-xs font-bold">KN</span>
             </div>
-            <span className="font-semibold text-stone-900">KeyNest AI</span>
+            <span className="font-semibold text-stone-900">PropertyLah AI</span>
           </div>
           <button
             onClick={() => setMobileOpen(true)}

@@ -20,10 +20,10 @@ export async function POST(request: NextRequest) {
 
     let response: AgentResponse;
 
-    if (hasQwenConfig() || hasHermesConfig()) {
-      response = await runLiveAgent(body);
-    } else if (IS_DEMO) {
+    if (IS_DEMO) {
       response = await runDemoAgent(body);
+    } else if (hasQwenConfig() || hasHermesConfig()) {
+      response = await runLiveAgent(body);
     } else {
       return NextResponse.json(
         {

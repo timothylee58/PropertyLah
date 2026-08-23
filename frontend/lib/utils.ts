@@ -67,10 +67,11 @@ export function calculateLeadScore(q: Qualification): number {
   return Math.min(100, score);
 }
 
-export function scoreLabel(score: number): { label: "Hot" | "Warm" | "Nurture"; colorClass: string } {
+export function scoreLabel(score: number): { label: "Hot" | "Warm" | "Nurture" | "Unqualified"; colorClass: string } {
   if (score >= 80) return { label: "Hot", colorClass: "bg-emerald-100 text-emerald-700" };
   if (score >= 60) return { label: "Warm", colorClass: "bg-amber-100 text-amber-700" };
-  return { label: "Nurture", colorClass: "bg-stone-100 text-stone-600" };
+  if (score >= 30) return { label: "Nurture", colorClass: "bg-stone-100 text-stone-600" };
+  return { label: "Unqualified", colorClass: "bg-slate-100 text-slate-600" };
 }
 
 export function statusColor(status: LeadStatus): string {

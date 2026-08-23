@@ -117,7 +117,7 @@ export interface Lead {
   financing?: "approved" | "cash" | "unknown";
   timeline?: string;
   score: number;
-  scoreLabel: "Hot" | "Warm" | "Nurture";
+  scoreLabel: "Hot" | "Warm" | "Nurture" | "Unqualified";
   status: LeadStatus;
   conversationStatus: ConversationStatus;
   assignedAgent?: string;

@@ -11,8 +11,9 @@ export function calculateLeadScore(q: Qualification): number {
   return Math.min(100, score);
 }
 
-export function scoreLabel(score: number): "Hot" | "Warm" | "Nurture" {
+export function scoreLabel(score: number): "Hot" | "Warm" | "Nurture" | "Unqualified" {
   if (score >= 80) return "Hot";
   if (score >= 60) return "Warm";
-  return "Nurture";
+  if (score >= 30) return "Nurture";
+  return "Unqualified";
 }

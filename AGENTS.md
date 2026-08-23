@@ -1,4 +1,4 @@
-# KeyNest AI — Project Notes for Agents
+# PropertyLah AI — Project Notes for Agents
 
 ## Frontend
 

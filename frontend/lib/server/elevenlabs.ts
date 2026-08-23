@@ -75,7 +75,7 @@ export async function requestElevenLabsCall(toNumber: string, leadName?: string)
         conversation_initiation_client_data: {
           conversation_config_override: {
             agent: {
-              first_message: `Hello, this is Sara from KeyNest. I'm calling about your property inquiry. Am I speaking with ${leadName || "the right person"}?`,
+              first_message: `Hello, this is Sara from PropertyLah. I'm calling about your property inquiry. Am I speaking with ${leadName || "the right person"}?`,
             },
           },
         },

@@ -1,4 +1,4 @@
-# KeyNest AI — Backend & Channel Integration Contract
+# PropertyLah AI — Backend & Channel Integration Contract
 
 This document describes the Next.js API routes and integration points for the real AI agent, Hermes/Qwen, Supabase CRM, WhatsApp webhooks, and optional calendar/voice providers.
 

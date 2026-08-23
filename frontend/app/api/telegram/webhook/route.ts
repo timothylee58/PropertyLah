@@ -67,10 +67,10 @@ export async function POST(request: NextRequest) {
     };
 
     let response;
-    if (hasQwenConfig() || hasHermesConfig()) {
-      response = await runLiveAgent(agentReq);
-    } else if (IS_DEMO) {
+    if (IS_DEMO) {
       response = await runDemoAgent(agentReq);
+    } else if (hasQwenConfig() || hasHermesConfig()) {
+      response = await runLiveAgent(agentReq);
     } else {
       throw new Error("Live agent is not configured. Configure Hermes/Qwen or enable demo mode.");
     }
@@ -133,7 +133,7 @@ export async function POST(request: NextRequest) {
 
     await store.updateLead(lead);
 
-    if (lead.telegramChatId) {
+    if (lead.telegramChatId && !IS_DEMO) {
       const sent = await sendTelegramMessage(lead.telegramChatId, response.message);
       if (!sent.ok) {
         console.warn("Telegram outbound failed:", sent.error);
@@ -141,6 +141,8 @@ export async function POST(request: NextRequest) {
         aiMessage.deliveryStatus = "delivered";
         await store.updateLead(lead);
       }
+    } else if (IS_DEMO) {
+      aiMessage.deliveryStatus = "delivered";
     }
 
     return NextResponse.json({ ok: true });

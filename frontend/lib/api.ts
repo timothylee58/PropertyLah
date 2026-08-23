@@ -206,10 +206,11 @@ export async function healthCheck(): Promise<HealthCheckResult> {
 // Agent chat
 // ---------------------------------------------------------------------------
 
-function scoreLabelFromScore(score: number): "Hot" | "Warm" | "Nurture" {
+function scoreLabelFromScore(score: number): "Hot" | "Warm" | "Nurture" | "Unqualified" {
   if (score >= 80) return "Hot";
   if (score >= 60) return "Warm";
-  return "Nurture";
+  if (score >= 30) return "Nurture";
+  return "Unqualified";
 }
 
 export async function sendAgentMessage(req: AgentChatRequest): Promise<AgentResponse> {
@@ -300,7 +301,11 @@ export async function sendSimulatedInboundMessage(conversationId: string, text: 
     lead.bookedViewing = response.viewing;
   }
   if (response.leadScore != null) lead.score = response.leadScore;
-  if (response.leadStatus) lead.status = response.leadStatus;
+  if (response.leadStatus) {
+    if (response.leadStatus === "booked" || lead.status !== "booked") {
+      lead.status = response.leadStatus;
+    }
+  }
   if (response.conversationStatus) lead.conversationStatus = response.conversationStatus;
   if (response.nextBestAction) lead.nextBestAction = response.nextBestAction;
   if (response.handoffRequired) lead.conversationStatus = "human_handling";
@@ -701,20 +706,21 @@ export async function getOverview(): Promise<OverviewData> {
       });
     }
     if (lead.status === "booked" && lead.bookedViewing) {
+      const bookingEvent = lead.timelineEvents?.find((e) => e.type === "viewing_booked");
       activities.push({
         id: `act-${lead.id}-booking`,
         title: `Viewing booked: ${lead.bookedViewing.listing?.name || lead.bookedViewing.propertyReference || "property to be confirmed"}`,
         description: `${lead.bookedViewing.slot.label}`,
         leadName: lead.name,
         leadId: lead.id,
-        createdAt: lead.bookedViewing.appointmentAt,
+        createdAt: bookingEvent ? bookingEvent.createdAt : lead.lastActivity,
         type: "viewing_booked",
       });
     }
     if (lead.status === "qualified") {
       activities.push({
         id: `act-${lead.id}-qualified`,
-        title: `KeyNest qualified ${lead.name}`,
+        title: `PropertyLah qualified ${lead.name}`,
         description: "Budget and financing captured",
         leadName: lead.name,
         leadId: lead.id,
@@ -738,13 +744,34 @@ export async function getOverview(): Promise<OverviewData> {
 
   activities.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
+  const responseTimes = leads
+    .map((l) => {
+      const firstLead = l.conversation.find((m) => m.sender === "lead");
+      const firstAi = l.conversation.find((m) => m.sender === "ai");
+      if (!firstLead || !firstAi) return null;
+      return (new Date(firstAi.createdAt).getTime() - new Date(firstLead.createdAt).getTime()) / 1000;
+    })
+    .filter((t): t is number => t != null && !Number.isNaN(t))
+    .sort((a, b) => a - b);
+
+  const medianFirstResponse =
+    responseTimes.length === 0
+      ? "—"
+      : (() => {
+          const mid = Math.floor(responseTimes.length / 2);
+          const seconds = responseTimes.length % 2 === 0 ? (responseTimes[mid - 1] + responseTimes[mid]) / 2 : responseTimes[mid];
+          if (seconds < 60) return "< 1 min";
+          if (seconds < 3600) return `${Math.round(seconds / 60)} min`;
+          return `${Math.round(seconds / 3600)} hr`;
+        })();
+
   return {
-    newLeads: 12,
-    qualifiedLeads: 8,
-    bookedViewings: 4,
-    hotLeads: 3,
-    medianFirstResponse: "< 1 min",
-    activeConversations: 8,
+    newLeads: leads.filter((l) => l.status === "new").length,
+    qualifiedLeads: leads.filter((l) => l.status === "qualified").length,
+    bookedViewings: viewings.filter((v) => v.confirmed).length,
+    hotLeads: leads.filter((l) => l.score >= 80).length,
+    medianFirstResponse,
+    activeConversations: leads.filter((l) => l.conversationStatus !== "closed").length,
     activities: activities.slice(0, 10),
     leads,
     viewings,

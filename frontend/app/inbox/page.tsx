@@ -65,24 +65,34 @@ export default function InboxPage() {
 
   const handleRequestCall = async () => {
     if (!selected) return;
+    const confirmed =
+      typeof window !== "undefined" &&
+      window.confirm(
+        `Request an AI call for ${selected.name}?\n\nDemo mode records the request in the CRM; no real phone call is placed.`
+      );
+    if (!confirmed) return;
     const updated = await requestAiCall(selected.id, "ai");
     if (updated) updateLead(updated);
-    if (IS_DEMO && typeof window !== "undefined") {
-      window.open(`/call?leadId=${selected.id}`, "_blank", "noopener,noreferrer");
-    }
   };
 
   const handleSelectListing = async (listing: Listing) => {
     if (!selected || simulating) return;
+    if (selected.recommendedListings?.some((l) => l.id === listing.id) && selected.bookedViewing?.listingId === listing.id) {
+      return;
+    }
     setSelectedListingId(listing.id);
     setSimulating(true);
     const updated = await sendSimulatedInboundMessage(selected.id, `I like ${listing.name}.`);
     if (updated) updateLead(updated);
+    setSelectedListingId(null);
     setSimulating(false);
   };
 
   const handleSelectSlot = async (slot: ViewingSlot) => {
     if (!selected || simulating) return;
+    if (selected.bookedViewing?.slot.id === slot.id) {
+      return;
+    }
     setSimulating(true);
     const updated = await sendSimulatedInboundMessage(selected.id, slot.label);
     if (updated) updateLead(updated);
@@ -146,7 +156,7 @@ export default function InboxPage() {
               {simulating && (
                 <div className="flex justify-end">
                   <div className="max-w-[80%] rounded-2xl rounded-tr-md bg-emerald-100 px-4 py-2 text-sm text-emerald-800">
-                    KeyNest is composing…
+                    PropertyLah is composing…
                   </div>
                 </div>
               )}

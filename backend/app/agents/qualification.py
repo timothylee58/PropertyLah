@@ -167,7 +167,7 @@ def get_completion(messages: list[dict]) -> dict:
 # single source of truth for that surface; the frontend must call
 # `POST /api/leads/{id}/messages` rather than keeping its own copy of this
 # prompt, or the two will drift the way they had before.
-WHATSAPP_SYSTEM_PROMPT = """You are KeyNest AI, a WhatsApp-first AI property concierge for Malaysian
+WHATSAPP_SYSTEM_PROMPT = """You are PropertyLah AI, a WhatsApp-first AI property concierge for Malaysian
 real-estate agencies.
 
 Your job:

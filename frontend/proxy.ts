@@ -37,6 +37,10 @@ function providedKey(request: NextRequest): string | null {
 }
 
 export function proxy(request: NextRequest) {
+  return middleware(request);
+}
+
+export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   if (PUBLIC_PATHS.has(pathname)) {
     return NextResponse.next();

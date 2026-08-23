@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Lead, ConversationMessage } from "@/lib/types";
-import { getLead } from "@/lib/api";
+import { getLead, IS_DEMO } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Phone, PhoneOff, Mic, Volume2 } from "lucide-react";
 
@@ -182,8 +182,8 @@ export default function CallPage() {
     const namePart = lead?.name ? `${lead.name}, ` : "";
     const greeting =
       language === "ms"
-        ? `Hai ${namePart}ini Sara dari KeyNest. Apa yang boleh saya bantu hari ini?`
-        : `Hi ${namePart}this is Sara from KeyNest. I'm your property assistant. How can I help you today?`;
+        ? `Hai ${namePart}ini Sara dari PropertyLah. Apa yang boleh saya bantu hari ini?`
+        : `Hi ${namePart}this is Sara from PropertyLah. I'm your property assistant. How can I help you today?`;
     addMessage("ai", greeting);
     speak(greeting, () => startListening());
   };
@@ -196,6 +196,23 @@ export default function CallPage() {
     setError(null);
     setTranscript("");
   };
+
+  if (IS_DEMO) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-stone-950 p-6 text-stone-100">
+        <div className="w-full max-w-md space-y-4 text-center">
+          <h1 className="text-2xl font-semibold">Demo mode</h1>
+          <p className="text-stone-400">
+            AI voice calls are simulated in the demo. Request a call from the lead
+            detail page to see the CRM state update.
+          </p>
+          <Button onClick={() => window.close()} className="bg-emerald-600 hover:bg-emerald-500">
+            Close
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-stone-950 p-6 text-stone-100">
@@ -219,7 +236,7 @@ export default function CallPage() {
                     ? "Sara is thinking..."
                     : "Call in progress"}
           </h1>
-          <p className="text-stone-400">{lead ? `Property AI assistant for ${lead.name}` : "Your KeyNest property AI assistant"}</p>
+          <p className="text-stone-400">{lead ? `Property AI assistant for ${lead.name}` : "Your PropertyLah property AI assistant"}</p>
         </div>
 
         {!isCalling && (
