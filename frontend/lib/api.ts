@@ -272,13 +272,29 @@ export async function sendSimulatedInboundMessage(conversationId: string, text: 
   });
   lead.lastActivity = now;
 
+  let qwenContent = "";
+  try {
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ conversation: lead.conversation, message: text }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      qwenContent = data?.content || "";
+    }
+  } catch (err) {
+    console.warn("Qwen chat failed, using fallback", err);
+  }
+
   const aiReply = generateSimulatedReply(text);
+  const aiContent = qwenContent || aiReply.content;
   const aiMessage: ConversationMessage = {
     id: `msg-${Date.now() + 1}-${Math.random().toString(36).slice(2)}`,
     conversationId: lead.id,
     sender: "ai",
     channel: "whatsapp",
-    content: aiReply.content,
+    content: aiContent,
     createdAt: new Date(Date.now() + 700).toISOString(),
     deliveryStatus: "read",
     metadata: aiReply.metadata,
