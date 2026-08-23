@@ -17,11 +17,16 @@ SECRET_HEADER = "x-vapi-secret"
 SIGNATURE_HEADER = "x-vapi-signature"
 
 
+def _matches(provided: str, expected: str) -> bool:
+    # compare_digest rejects str inputs holding non-ASCII, so compare bytes
+    return hmac.compare_digest(provided.encode("utf-8", "surrogateescape"), expected.encode())
+
+
 def _signature_matches(raw_body: bytes, provided: str, secret: str) -> bool:
     expected = hmac.new(secret.encode(), raw_body, hashlib.sha256).hexdigest()
     # some HMAC credential configs prefix the digest, e.g. "sha256=<hex>"
     candidate = provided.split("=", 1)[1] if provided.startswith("sha256=") else provided
-    return hmac.compare_digest(expected, candidate.strip().lower())
+    return _matches(candidate.strip().lower(), expected)
 
 
 def verify_vapi_request(request: Request, raw_body: bytes) -> None:
@@ -37,7 +42,7 @@ def verify_vapi_request(request: Request, raw_body: bytes) -> None:
         )
 
     provided_secret = request.headers.get(SECRET_HEADER)
-    if provided_secret and hmac.compare_digest(provided_secret, secret):
+    if provided_secret and _matches(provided_secret, secret):
         return
 
     signature = request.headers.get(SIGNATURE_HEADER)

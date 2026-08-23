@@ -1,9 +1,12 @@
+import logging
+
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 
 from app.services import calendar_service, lead_service
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 class BookingRequest(BaseModel):
@@ -45,7 +48,14 @@ async def book_slot(booking: BookingRequest):
     except calendar_service.CalendarError as e:
         raise HTTPException(status_code=502, detail=str(e)) from e
 
+    linked = True
     if booking.vapi_call_id:
-        lead_service.record_booking(booking.vapi_call_id, confirmed, booking.caller_phone)
+        # the slot is already held at cal.com — a persistence failure must not be
+        # reported as a failed booking, or the caller retries into a double-booking
+        try:
+            lead_service.record_booking(booking.vapi_call_id, confirmed, booking.caller_phone)
+        except Exception:
+            logger.exception("booking succeeded but could not be linked to the lead")
+            linked = False
 
-    return {"booked": True, **confirmed}
+    return {"booked": True, **confirmed, "lead_linked": linked}

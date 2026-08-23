@@ -5,6 +5,7 @@ import json
 import pytest
 from fastapi.testclient import TestClient
 
+from app.api.routes import calendar as calendar_routes
 from app.api.routes import voice_webhook
 from app.main import app
 from app.services import calendar_service
@@ -47,6 +48,36 @@ def test_rejects_signature_of_different_body():
         {"x-vapi-signature": _signature({"message": {"type": "status-update"}})},
     )
     assert response.status_code == 401
+
+
+@pytest.mark.parametrize("header", ["x-vapi-secret", "x-vapi-signature"])
+def test_rejects_non_ascii_credentials(header):
+    """compare_digest raises TypeError on non-ASCII str, which used to surface as a 500."""
+    # Starlette decodes header bytes as latin-1, so this arrives as a non-ASCII str
+    response = _post({"message": {"type": "status-update"}}, {header: "sécret".encode("latin-1")})
+    assert response.status_code == 401
+
+
+def test_rejects_non_json_body():
+    response = client.post(
+        "/webhook/vapi", content=b"not json", headers={"x-vapi-secret": SECRET}
+    )
+    assert response.status_code == 400
+
+
+def test_rejects_non_object_body():
+    response = client.post("/webhook/vapi", content=b"[1, 2]", headers={"x-vapi-secret": SECRET})
+    assert response.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_tool_failure_never_escapes_as_an_error(monkeypatch):
+    async def explode(*args, **kwargs):
+        raise RuntimeError("openclaw unreachable")
+
+    monkeypatch.setattr(voice_webhook.openclaw_tools, "get_comps", explode)
+    result = await voice_webhook.dispatch_tool("get_comps", {"area": "KLCC"}, {})
+    assert "callback" in result["instruction"]
 
 
 def test_end_of_call_report_is_persisted(monkeypatch):
@@ -126,6 +157,31 @@ async def test_tool_calls_batch_returns_one_result_per_call(monkeypatch):
     )
     assert [r["toolCallId"] for r in results] == ["tc-1"]
     assert json.loads(results[0]["result"])["slots"][0]["label"] == "Tue 1 Sep, 10:00 AM"
+
+
+def test_book_route_reports_success_when_the_slot_is_held_but_unlinkable(monkeypatch):
+    """The slot is already taken at cal.com, so a DB failure must not read as a failed booking."""
+
+    async def fake_book(**kwargs):
+        return {"start": "2026-09-01T02:00:00Z", "booking_uid": "bk-1"}
+
+    def explode(*args, **kwargs):
+        raise RuntimeError("supabase_url is required")
+
+    monkeypatch.setattr(calendar_service, "book_slot", fake_book)
+    monkeypatch.setattr(calendar_routes.lead_service, "record_booking", explode)
+
+    response = client.post(
+        "/calendar/book",
+        json={"preferred_datetime": "2026-09-01T02:00:00Z", "vapi_call_id": "call-1"},
+    )
+    assert response.status_code == 200
+    assert response.json() == {
+        "booked": True,
+        "start": "2026-09-01T02:00:00Z",
+        "booking_uid": "bk-1",
+        "lead_linked": False,
+    }
 
 
 def test_json_string_arguments_are_parsed():

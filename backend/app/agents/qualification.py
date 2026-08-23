@@ -1,8 +1,18 @@
+from functools import lru_cache
+
 from openai import OpenAI
 from app.config import settings
 
-# Qwen exposes an OpenAI-compatible endpoint via DashScope — reuse the openai SDK
-client = OpenAI(api_key=settings.QWEN_API_KEY, base_url=settings.QWEN_BASE_URL)
+
+@lru_cache(maxsize=1)
+def get_client() -> OpenAI:
+    """Qwen speaks the OpenAI protocol via DashScope, so reuse the openai SDK.
+
+    Built lazily: OpenAI() raises without an API key, and the app must still
+    import and serve the calendar/webhook routes when Qwen isn't configured.
+    """
+    return OpenAI(api_key=settings.QWEN_API_KEY, base_url=settings.QWEN_BASE_URL)
+
 
 SYSTEM_PROMPT = """You are Ejen, a voice assistant for a Malaysian property agency.
 This call may be recorded for quality and training purposes — always disclose this
@@ -110,7 +120,7 @@ TOOLS = [
 def get_completion(messages: list[dict]) -> dict:
     """Called by the Vapi custom-LLM webhook for each conversation turn."""
     full_messages = [{"role": "system", "content": SYSTEM_PROMPT}] + messages
-    response = client.chat.completions.create(
+    response = get_client().chat.completions.create(
         model=settings.QWEN_MODEL,
         messages=full_messages,
         tools=TOOLS,

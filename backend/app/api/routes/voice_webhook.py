@@ -1,7 +1,7 @@
 import json
 import logging
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, HTTPException, Request
 
 from app.agents import openclaw_tools
 from app.agents.qualification import get_completion
@@ -22,8 +22,8 @@ async def llm_completions(request: Request):
     raw_body = await request.body()
     if settings.VAPI_VERIFY_LLM_ENDPOINT:
         verify_vapi_request(request, raw_body)
-    body = json.loads(raw_body or b"{}")
-    return get_completion(body.get("messages", []))
+    body = _parse_body(raw_body)
+    return get_completion(body.get("messages") or [])
 
 
 @router.post("/webhook/vapi")
@@ -35,8 +35,8 @@ async def vapi_webhook(request: Request):
     raw_body = await request.body()
     verify_vapi_request(request, raw_body)
 
-    payload = json.loads(raw_body or b"{}")
-    message = payload.get("message", {})
+    payload = _parse_body(raw_body)
+    message = payload.get("message") or {}
     event_type = message.get("type")
 
     if event_type == "function-call":
@@ -70,6 +70,16 @@ async def handle_tool_calls(message: dict) -> list[dict]:
     return results
 
 
+def _parse_body(raw_body: bytes) -> dict:
+    try:
+        payload = json.loads(raw_body or b"{}")
+    except json.JSONDecodeError as e:
+        raise HTTPException(status_code=400, detail="body is not valid JSON") from e
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=400, detail="body must be a JSON object")
+    return payload
+
+
 def _parse_arguments(arguments: object) -> dict:
     """Arguments arrive as an object from Vapi but as a JSON string from some models."""
     if isinstance(arguments, dict):
@@ -91,6 +101,18 @@ def _call_context(message: dict) -> tuple[str | None, str | None]:
 
 
 async def dispatch_tool(name: str | None, params: dict, message: dict) -> dict:
+    """A tool must never take the call down — every failure becomes a tool result."""
+    try:
+        return await _dispatch_tool(name, params, message)
+    except Exception as e:
+        logger.exception("tool %r failed", name)
+        return {
+            "error": str(e),
+            "instruction": "That lookup failed — do not guess, offer a human callback.",
+        }
+
+
+async def _dispatch_tool(name: str | None, params: dict, message: dict) -> dict:
     call_id, caller_phone = _call_context(message)
 
     if name == "verify_listing":

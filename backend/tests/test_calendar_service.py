@@ -7,14 +7,20 @@ from app.services import calendar_service, lead_service
 
 
 class _FakeResponse:
-    def __init__(self, payload: dict):
+    def __init__(self, payload: dict, text: str | None = None):
         self._payload = payload
+        self.text = text or ""
 
     def raise_for_status(self) -> None:
         return None
 
     def json(self) -> dict:
+        if self._payload is _NON_JSON:
+            raise ValueError("Expecting value: line 1 column 1 (char 0)")
         return self._payload
+
+
+_NON_JSON = object()
 
 
 class _FakeClient:
@@ -32,7 +38,7 @@ class _FakeClient:
 
     async def get(self, url, params=None, headers=None):
         self._captured.update(url=url, params=params, headers=headers)
-        return _FakeResponse(self._payload)
+        return _FakeResponse(self._payload, text="<html>maintenance</html>")
 
     async def post(self, url, json=None, headers=None):
         self._captured.update(url=url, json=json, headers=headers)
@@ -75,7 +81,7 @@ async def test_slots_are_sorted_deduped_by_time_and_limited(monkeypatch):
     assert [s["start"] for s in slots] == sorted(s["start"] for s in slots)
     assert len(slots) == 3
     assert captured["headers"]["cal-api-version"] == "2024-09-04"
-    assert captured["params"]["eventTypeId"] == "42"
+    assert captured["params"]["eventTypeId"] == 42
 
 
 @pytest.mark.asyncio
@@ -130,6 +136,38 @@ async def test_missing_credentials_raise_not_configured(monkeypatch):
     monkeypatch.setattr(calendar_service.settings, "CAL_API_KEY", "")
     with pytest.raises(calendar_service.CalendarNotConfigured):
         await calendar_service.get_available_slots()
+
+
+@pytest.mark.asyncio
+async def test_non_json_body_is_an_upstream_error_not_a_crash(monkeypatch):
+    """json.JSONDecodeError is a ValueError, not an httpx.HTTPError — it used to escape."""
+    _patch_client(monkeypatch, _NON_JSON)
+    with pytest.raises(calendar_service.CalendarError):
+        await calendar_service.get_available_slots()
+    with pytest.raises(calendar_service.CalendarError):
+        await calendar_service.book_slot(start="2026-09-01T02:00:00Z")
+
+
+@pytest.mark.asyncio
+async def test_wrongly_typed_slot_payload_is_an_upstream_error(monkeypatch):
+    _patch_client(monkeypatch, {"data": "unavailable"})
+    with pytest.raises(calendar_service.CalendarError):
+        await calendar_service.get_available_slots()
+
+
+@pytest.mark.asyncio
+async def test_wrongly_typed_booking_payload_still_returns_the_slot(monkeypatch):
+    _patch_client(monkeypatch, {"data": "created"})
+    booking = await calendar_service.book_slot(start="2026-09-01T02:00:00Z")
+    assert booking["booking_uid"] is None
+
+
+@pytest.mark.asyncio
+async def test_non_numeric_event_type_is_a_config_error(monkeypatch):
+    monkeypatch.setattr(calendar_service.settings, "CAL_EVENT_TYPE_ID", "my-event")
+    _patch_client(monkeypatch, {"data": {}})
+    with pytest.raises(calendar_service.CalendarNotConfigured):
+        await calendar_service.book_slot(start="2026-09-01T02:00:00Z")
 
 
 @pytest.mark.parametrize(

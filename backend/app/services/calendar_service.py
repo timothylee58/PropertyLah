@@ -22,9 +22,15 @@ class CalendarNotConfigured(CalendarError):
     pass
 
 
-def _require_config() -> None:
+def _require_config() -> int:
     if not settings.CAL_API_KEY or not settings.CAL_EVENT_TYPE_ID:
         raise CalendarNotConfigured("CAL_API_KEY and CAL_EVENT_TYPE_ID must be set")
+    try:
+        return int(settings.CAL_EVENT_TYPE_ID)
+    except (TypeError, ValueError) as e:
+        raise CalendarNotConfigured(
+            f"CAL_EVENT_TYPE_ID must be numeric, got {settings.CAL_EVENT_TYPE_ID!r}"
+        ) from e
 
 
 def _headers(api_version: str) -> dict:
@@ -37,6 +43,17 @@ def _headers(api_version: str) -> dict:
 
 def _tz() -> ZoneInfo:
     return ZoneInfo(settings.CAL_TIMEZONE)
+
+
+def _decode(resp: httpx.Response) -> dict:
+    """Cal.com is expected to answer JSON objects; anything else is an upstream fault."""
+    try:
+        payload = resp.json()
+    except ValueError as e:
+        raise CalendarError(f"cal.com returned a non-JSON body: {resp.text[:200]!r}") from e
+    if not isinstance(payload, dict):
+        raise CalendarError(f"cal.com returned a {type(payload).__name__}, expected an object")
+    return payload
 
 
 def _parse_slot_start(raw: object) -> datetime | None:
@@ -64,13 +81,13 @@ def format_slot(start: datetime) -> dict:
 
 async def get_available_slots(days_ahead: int | None = None, limit: int | None = None) -> list[dict]:
     """Return the next available viewing slots, soonest first."""
-    _require_config()
+    event_type_id = _require_config()
     days_ahead = days_ahead or settings.CAL_SLOT_DAYS_AHEAD
     limit = limit or settings.CAL_SLOTS_TO_OFFER
 
     now = datetime.now(timezone.utc)
     params = {
-        "eventTypeId": settings.CAL_EVENT_TYPE_ID,
+        "eventTypeId": event_type_id,
         "start": now.date().isoformat(),
         "end": (now + timedelta(days=days_ahead)).date().isoformat(),
         "timeZone": settings.CAL_TIMEZONE,
@@ -84,12 +101,14 @@ async def get_available_slots(days_ahead: int | None = None, limit: int | None =
                 headers=_headers(settings.CAL_SLOTS_API_VERSION),
             )
             resp.raise_for_status()
-            payload = resp.json()
+            payload = _decode(resp)
         except httpx.HTTPError as e:
             raise CalendarError(f"cal.com slots lookup failed: {e}") from e
 
     # {"data": {"2026-08-25": [{"start": "..."}, ...], ...}}
-    by_day = payload.get("data") or {}
+    by_day = payload.get("data")
+    if not isinstance(by_day, dict):
+        raise CalendarError(f"unexpected cal.com slots payload: {type(by_day).__name__}")
     starts = [
         start
         for day_slots in by_day.values()
@@ -108,7 +127,7 @@ async def book_slot(
     metadata: dict | None = None,
 ) -> dict:
     """Book `start` (ISO-8601, UTC) and return the confirmed booking."""
-    _require_config()
+    event_type_id = _require_config()
 
     parsed = _parse_slot_start(start)
     if parsed is None:
@@ -130,7 +149,7 @@ async def book_slot(
 
     body: dict = {
         "start": parsed.isoformat().replace("+00:00", "Z"),
-        "eventTypeId": int(settings.CAL_EVENT_TYPE_ID),
+        "eventTypeId": event_type_id,
         "attendee": attendee,
     }
     if notes:
@@ -146,7 +165,7 @@ async def book_slot(
                 headers=_headers(settings.CAL_BOOKINGS_API_VERSION),
             )
             resp.raise_for_status()
-            payload = resp.json()
+            payload = _decode(resp)
         except httpx.HTTPStatusError as e:
             raise CalendarError(
                 f"cal.com booking rejected ({e.response.status_code}): {e.response.text[:200]}"
@@ -154,7 +173,9 @@ async def book_slot(
         except httpx.HTTPError as e:
             raise CalendarError(f"cal.com booking failed: {e}") from e
 
-    booking = payload.get("data") or {}
+    booking = payload.get("data")
+    if not isinstance(booking, dict):
+        booking = {}
     return {
         **format_slot(parsed),
         "booking_uid": booking.get("uid"),
