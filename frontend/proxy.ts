@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   DASHBOARD_API_KEY,
   DASHBOARD_REQUIRE_AUTH,
+  IS_DEMO,
   RATE_LIMIT_ENABLED,
   RATE_LIMIT_DASHBOARD_PER_MINUTE,
   RATE_LIMIT_AGENT_PER_MINUTE,
@@ -41,7 +42,13 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  if (DASHBOARD_REQUIRE_AUTH) {
+  // Demo mode ships with zero credentials by design (see AGENTS.md: "NEXT_PUBLIC_DEMO_MODE=true
+  // with no credentials should run the full Aisha demo flow end-to-end") — nothing behind these
+  // routes is real customer data in that mode, so the shared-key gate only applies once the
+  // deployment is actually running live. A deployment that enables demo mode *and* configures
+  // real Supabase credentials would still skip this check; that's an existing gap in how demo
+  // mode is scoped (see frontend/lib/server/store.ts), not something this gate can fix on its own.
+  if (DASHBOARD_REQUIRE_AUTH && !IS_DEMO) {
     if (!DASHBOARD_API_KEY) {
       return NextResponse.json(
         { error: "DASHBOARD_API_KEY is not set — set it, or set DASHBOARD_REQUIRE_AUTH=false locally" },
