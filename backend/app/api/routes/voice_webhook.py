@@ -1,19 +1,24 @@
 import json
 import logging
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 
 from app.agents import openclaw_tools
 from app.agents.qualification import get_completion
 from app.config import settings
+from app.core.rate_limit import enforce
 from app.core.security import verify_vapi_request
 from app.services import calendar_service, comps_service, lead_service
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
+# Vapi retries and, on a busy line, per-call tool traffic can be bursty, so this
+# is deliberately generous — it exists to blunt abuse, not to throttle normal use.
+_webhook_rate_limit = Depends(enforce("voice_webhook", settings.RATE_LIMIT_WEBHOOK_PER_MINUTE))
 
-@router.post("/llm/chat/completions")
+
+@router.post("/llm/chat/completions", dependencies=[_webhook_rate_limit])
 async def llm_completions(request: Request):
     """
     OpenAI-compatible endpoint — set this as Vapi's custom-LLM URL so Qwen
@@ -26,7 +31,7 @@ async def llm_completions(request: Request):
     return get_completion(body.get("messages") or [])
 
 
-@router.post("/webhook/vapi")
+@router.post("/webhook/vapi", dependencies=[_webhook_rate_limit])
 async def vapi_webhook(request: Request):
     """
     Handles Vapi server events: function-call / tool-calls, end-of-call-report,

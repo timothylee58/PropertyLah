@@ -78,6 +78,62 @@ def record_booking(vapi_call_id: str, booking: dict, caller_phone: str | None = 
     return (result.data or [{}])[0]
 
 
+def get_lead(lead_id: str) -> dict | None:
+    result = get_db().table("leads").select("*").eq("id", lead_id).limit(1).execute()
+    return (result.data or [None])[0]
+
+
+def _touch(lead_id: str, patch: dict) -> dict | None:
+    patch = {**patch, "updated_at": datetime.now(timezone.utc).isoformat()}
+    result = get_db().table("leads").update(patch).eq("id", lead_id).execute()
+    return (result.data or [None])[0]
+
+
+def set_conversation_status(lead_id: str, status: str) -> dict | None:
+    return _touch(lead_id, {"conversation_status": status})
+
+
+def assign_agent(lead_id: str, agent_name: str) -> dict | None:
+    return _touch(lead_id, {"assigned_agent": agent_name})
+
+
+def set_call_status(lead_id: str, status: str) -> dict | None:
+    return _touch(lead_id, {"call_status": status})
+
+
+def add_message(
+    lead_id: str,
+    sender: str,
+    content: str,
+    channel: str = "whatsapp",
+    delivery_status: str = "sent",
+    metadata: dict | None = None,
+) -> dict:
+    row = {
+        "lead_id": lead_id,
+        "sender": sender,
+        "channel": channel,
+        "content": content,
+        "delivery_status": delivery_status,
+    }
+    if metadata:
+        row["metadata"] = metadata
+    result = get_db().table("messages").insert(row).execute()
+    return (result.data or [{}])[0]
+
+
+def list_messages(lead_id: str) -> list[dict]:
+    result = (
+        get_db()
+        .table("messages")
+        .select("*")
+        .eq("lead_id", lead_id)
+        .order("created_at")
+        .execute()
+    )
+    return result.data or []
+
+
 def save_call_log(message: dict) -> dict:
     """Upsert the end-of-call report and link it to the lead from the same call."""
     call = message.get("call") or {}
