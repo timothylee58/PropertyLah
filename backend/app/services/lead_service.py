@@ -9,6 +9,7 @@ from datetime import datetime, timezone
 
 from app.core.database import get_db
 from app.models.lead import LeadStatus, LeadType
+from app.services import scoring
 
 QUALIFIED_SCORE_THRESHOLD = 60
 
@@ -40,14 +41,44 @@ def _derive_status(lead_type: str | None, score: int | None) -> str:
 
 
 def upsert_lead_from_call(vapi_call_id: str, params: dict, caller_phone: str | None = None) -> dict:
-    """Persist what the agent learned during `vapi_call_id`'s conversation."""
+    """Persist what the agent learned during `vapi_call_id`'s conversation.
+
+    This is the `create_lead` tool's handler — named `upsert` because it also
+    covers every later call for the same `vapi_call_id` (a mid-call save, a
+    retried tool call, the final summary), not just the first one.
+    """
     row = {key: value for key, value in params.items() if key in LEAD_FIELDS and value is not None}
     row["vapi_call_id"] = vapi_call_id
     if caller_phone and not row.get("caller_phone"):
         row["caller_phone"] = caller_phone
     row.setdefault("lead_type", LeadType.unknown.value)
+
+    if row.get("qualification_score") is None:
+        # the agent didn't supply one this call — score off everything known
+        # about the lead so far, not just the fields this call happened to send
+        existing = get_lead_by_call(vapi_call_id) or {}
+        row["qualification_score"] = scoring.compute_lead_score({**existing, **row})
+
     row["status"] = _derive_status(row.get("lead_type"), row.get("qualification_score"))
 
+    result = get_db().table("leads").upsert(row, on_conflict="vapi_call_id").execute()
+    return (result.data or [{}])[0]
+
+
+def ensure_lead(vapi_call_id: str, caller_phone: str | None = None) -> dict:
+    """Get-or-create a minimal row for `vapi_call_id`.
+
+    Called on the conversation's first turn, before the agent has learned
+    anything, so mid-call turns have a `lead_id` to log messages against
+    (see `add_message`). `create_lead`/`upsert_lead_from_call` fills the rest
+    in later via the same upsert-on-`vapi_call_id`.
+    """
+    existing = get_lead_by_call(vapi_call_id)
+    if existing:
+        return existing
+    row = {"vapi_call_id": vapi_call_id, "status": LeadStatus.new.value}
+    if caller_phone:
+        row["caller_phone"] = caller_phone
     result = get_db().table("leads").upsert(row, on_conflict="vapi_call_id").execute()
     return (result.data or [{}])[0]
 

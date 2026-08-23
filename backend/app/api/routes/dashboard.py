@@ -19,7 +19,7 @@ from app.config import settings
 from app.core.database import get_db
 from app.core.rate_limit import enforce
 from app.core.security import require_dashboard_auth
-from app.services import calendar_service, dashboard_presenter, lead_service
+from app.services import calendar_service, dashboard_presenter, lead_service, listings_service
 
 logger = logging.getLogger(__name__)
 
@@ -118,6 +118,23 @@ async def get_overview() -> dict:
     rows, _ = _fetch_leads(AGGREGATE_LEAD_CAP)
     leads = [dashboard_presenter.present_lead(row) for row in rows]
     return dashboard_presenter.present_overview(leads)
+
+
+@router.get("/listings")
+async def list_listings(
+    location: str | None = None,
+    max_price: int | None = None,
+    bedrooms: int | None = None,
+    property_type: str | None = None,
+) -> list[dict]:
+    """The same Supabase-backed inventory the voice agent's list_listings tool reads."""
+    return listings_service.list_listings(
+        location=location,
+        max_price=max_price,
+        bedrooms=bedrooms,
+        property_type=property_type,
+        limit=50,
+    )
 
 
 class MessageRequest(BaseModel):

@@ -24,18 +24,21 @@ the caller uses. Keep responses short — this is a phone call, not a chat.
 Your job, in order:
 1. Identify caller type: buyer, tenant inquiry, or maintenance request.
 2. If buyer/tenant — qualify: budget range, preferred area, timeline to move/buy.
-3. If the caller asks what a property or area is worth, whether a price is fair,
+3. If the caller wants to browse or you need to recommend properties, call
+   list_listings with whatever criteria they've given (area, budget, bedrooms,
+   type) and only describe what it returns.
+4. If the caller asks what a property or area is worth, whether a price is fair,
    or how the market is doing, call get_comps and quote only the transacted
    prices it returns — they come from government records. Never estimate a price
    yourself, and never present a median as a valuation of their specific unit.
-4. If they reference a specific listing or property, call verify_listing before
+5. If they reference a specific listing or property, call verify_listing before
    confirming any details about it — never state a listing's price or availability
    from memory, always verify first.
-5. If qualified and interested, call get_available_slots and read out the slot
+6. If qualified and interested, call get_available_slots and read out the slot
    labels you get back. Never invent or guess times. Once the caller picks one,
    call book_appointment with that slot's exact `start` value.
-6. Always call save_lead at the end of the conversation with whatever you learned,
-   even if the lead is not qualified.
+7. Always call create_lead at the end of the conversation with whatever you
+   learned, even if the lead is not qualified.
 
 Never invent property details, prices, availability, or appointment times. If a
 tool returns an error or an `instruction` field, follow that instruction — offer
@@ -95,6 +98,27 @@ TOOLS = [
     {
         "type": "function",
         "function": {
+            "name": "list_listings",
+            "description": (
+                "Search the approved listing inventory. Use before recommending or "
+                "describing any property beyond the one the caller already named "
+                "(use verify_listing for that one)."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "location": {"type": "string", "description": "Area/neighbourhood the caller wants"},
+                    "max_price": {"type": "number", "description": "Upper budget in MYR, if known"},
+                    "bedrooms": {"type": "integer"},
+                    "property_type": {"type": "string", "description": "e.g. condominium, terraced, loft"},
+                },
+                "required": [],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
             "name": "get_available_slots",
             "description": (
                 "List the next real available viewing slots. Call this before offering "
@@ -127,7 +151,7 @@ TOOLS = [
     {
         "type": "function",
         "function": {
-            "name": "save_lead",
+            "name": "create_lead",
             "description": "Save the lead's qualification details captured during the call.",
             "parameters": {
                 "type": "object",
@@ -150,9 +174,18 @@ TOOLS = [
 ]
 
 
-def get_completion(messages: list[dict]) -> dict:
-    """Called by the Vapi custom-LLM webhook for each conversation turn."""
-    full_messages = [{"role": "system", "content": SYSTEM_PROMPT}] + messages
+def get_completion(messages: list[dict], state_hint: str | None = None) -> dict:
+    """Called by the Vapi custom-LLM webhook for each conversation turn.
+
+    `state_hint` is the qualification state machine's read of what should
+    happen next (see app/agents/state_machine.py), computed by the webhook
+    handler from the lead's own row before each call — a live nudge, not a
+    substitute for the caller's actual answers.
+    """
+    full_messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+    if state_hint:
+        full_messages.append({"role": "system", "content": f"Current step: {state_hint}"})
+    full_messages += messages
     response = get_client().chat.completions.create(
         model=settings.QWEN_MODEL,
         messages=full_messages,

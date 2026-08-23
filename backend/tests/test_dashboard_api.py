@@ -328,3 +328,21 @@ def test_book_viewing_surfaces_a_calendar_error(db, monkeypatch):
     )
 
     assert response.status_code == 502
+
+
+def test_listings_are_exposed_for_frontend_consumers(db, monkeypatch):
+    db.tables["listings"] = [{
+        "id": "verde-mont-kiara-3br", "name": "Verde Mont Kiara",
+        "location": "Mont Kiara, Kuala Lumpur", "price": 1180000,
+        "price_display": "RM1,180,000", "beds": 3, "baths": 2, "sqft": 1250,
+        "property_type": "Condominium", "status": "available",
+    }]
+    monkeypatch.setattr(dashboard.listings_service, "get_db", lambda: db)
+
+    listings = client.get("/api/listings").json()
+
+    assert [listing["id"] for listing in listings] == ["verde-mont-kiara-3br"]
+
+
+def test_listings_route_requires_auth(db):
+    assert anon_client.get("/api/listings").status_code == 401

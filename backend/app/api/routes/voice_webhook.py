@@ -3,12 +3,12 @@ import logging
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 
-from app.agents import openclaw_tools
+from app.agents import openclaw_tools, state_machine
 from app.agents.qualification import get_completion
 from app.config import settings
 from app.core.rate_limit import enforce
 from app.core.security import verify_vapi_request
-from app.services import calendar_service, comps_service, lead_service
+from app.services import calendar_service, comps_service, lead_service, listings_service
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -23,12 +23,66 @@ async def llm_completions(request: Request):
     """
     OpenAI-compatible endpoint — set this as Vapi's custom-LLM URL so Qwen
     drives the conversation instead of Vapi's default model.
+
+    Every turn: get-or-create the lead row for this call so there's a
+    `lead_id` to log against, compute where the state machine says the
+    conversation should be, feed that to the model as a hint, then log the
+    turn — all best-effort, since a logging/state hiccup must never take the
+    call down.
     """
     raw_body = await request.body()
     if settings.VAPI_VERIFY_LLM_ENDPOINT:
         verify_vapi_request(request, raw_body)
     body = _parse_body(raw_body)
-    return get_completion(body.get("messages") or [])
+    messages = body.get("messages") or []
+    call_id, caller_phone = _call_context({"call": body.get("call")})
+
+    lead = None
+    if call_id:
+        try:
+            lead = lead_service.ensure_lead(call_id, caller_phone)
+        except Exception:
+            logger.exception("could not ensure a lead row for call %s", call_id)
+
+    state = state_machine.next_state(lead)
+    completion = get_completion(messages, state_hint=state_machine.guidance_for(state))
+
+    if lead:
+        try:
+            _log_turn(lead["id"], messages, completion)
+        except Exception:
+            logger.exception("could not log conversation turn for call %s", call_id)
+
+    return completion
+
+
+def _log_turn(lead_id: str, messages: list[dict], completion: dict) -> None:
+    """Best-effort audit trail: the newest inbound message and the model's reply.
+
+    Vapi resends the full running transcript each turn, so "the last `user`
+    message" is the new one. This is separate from the end-of-call transcript
+    (save_call_log) — that arrives once, at the end, and is lost entirely if
+    the call drops before it fires; this gives a live, turn-by-turn record.
+    """
+    last_user = next((m for m in reversed(messages) if m.get("role") == "user"), None)
+    if last_user and last_user.get("content"):
+        lead_service.add_message(lead_id, sender="lead", content=last_user["content"], channel="voice")
+
+    choice = (completion.get("choices") or [{}])[0]
+    reply = choice.get("message") or {}
+    if reply.get("content"):
+        lead_service.add_message(lead_id, sender="ai", content=reply["content"], channel="voice")
+    elif reply.get("tool_calls"):
+        names = ", ".join(
+            (tc.get("function") or {}).get("name", "?") for tc in reply["tool_calls"]
+        )
+        lead_service.add_message(
+            lead_id,
+            sender="ai",
+            content=f"[tool call] {names}",
+            channel="voice",
+            metadata={"tool_calls": reply["tool_calls"]},
+        )
 
 
 @router.post("/webhook/vapi", dependencies=[_webhook_rate_limit])
@@ -130,14 +184,26 @@ async def _dispatch_tool(name: str | None, params: dict, message: dict) -> dict:
             params.get("property_type"),
         )
 
+    if name == "list_listings":
+        listings = listings_service.list_listings(
+            location=params.get("location"),
+            max_price=params.get("max_price"),
+            bedrooms=params.get("bedrooms"),
+            property_type=params.get("property_type"),
+        )
+        return {"listings": listings} if listings else {
+            "listings": [],
+            "instruction": "No matching listings — say so plainly rather than describing one from memory.",
+        }
+
     if name == "get_available_slots":
         return await get_available_slots()
 
     if name == "book_appointment":
         return await book_appointment(params, call_id, caller_phone)
 
-    if name == "save_lead":
-        return save_lead(params, call_id, caller_phone)
+    if name == "create_lead":
+        return create_lead(params, call_id, caller_phone)
 
     logger.warning("unknown tool requested: %r", name)
     return {"error": f"unknown function {name}"}
@@ -212,9 +278,9 @@ def _existing_booking(call_id: str | None, start: str) -> dict | None:
     return {"booking_uid": lead["booking_uid"], "start": lead["appointment_at"]}
 
 
-def save_lead(params: dict, call_id: str | None, caller_phone: str | None) -> dict:
+def create_lead(params: dict, call_id: str | None, caller_phone: str | None) -> dict:
     if not call_id:
-        logger.warning("save_lead called without a call id — skipping persistence")
+        logger.warning("create_lead called without a call id — skipping persistence")
         return {"saved": False, "error": "missing call id"}
     try:
         lead = lead_service.upsert_lead_from_call(call_id, params, caller_phone)

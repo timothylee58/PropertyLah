@@ -18,7 +18,7 @@ class FakeQuery:
         self.op = "select"
         self.payload: dict | None = None
         self.on_conflict: str | None = None
-        self.filters: list[tuple[str, object]] = []
+        self.filters: list = []  # list of (row) -> bool predicates
         self._count = None
         self._order = None
         self._range = None
@@ -47,7 +47,18 @@ class FakeQuery:
         return self
 
     def eq(self, column: str, value) -> "FakeQuery":
-        self.filters.append((column, value))
+        self.filters.append(lambda row, c=column, v=value: str(row.get(c)) == str(v))
+        return self
+
+    def ilike(self, column: str, pattern: str) -> "FakeQuery":
+        # supabase-py passes SQL LIKE syntax ("%text%"); this only needs to
+        # support the "%substring%" shape listings_service.py actually sends
+        needle = pattern.strip("%").lower()
+        self.filters.append(lambda row, c=column, n=needle: n in str(row.get(c, "")).lower())
+        return self
+
+    def lte(self, column: str, value) -> "FakeQuery":
+        self.filters.append(lambda row, c=column, v=value: row.get(c) is not None and row[c] <= v)
         return self
 
     def order(self, column: str, desc: bool = False) -> "FakeQuery":
@@ -67,7 +78,7 @@ class FakeQuery:
 
     # -- execution ----------------------------------------------------------
     def _matches(self, row: dict) -> bool:
-        return all(str(row.get(col)) == str(val) for col, val in self.filters)
+        return all(predicate(row) for predicate in self.filters)
 
     def execute(self) -> FakeResult:
         if self.op == "insert":
