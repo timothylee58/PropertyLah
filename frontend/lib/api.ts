@@ -613,7 +613,8 @@ export async function requestAiCall(leadId: string, callType: "ai" | "human" = "
         body: JSON.stringify({ callType, listingId }),
       });
       if (!res.ok) throw new Error("Live call request failed");
-      return (await res.json()) as Lead;
+      const body = (await res.json()) as { lead?: Lead; elevenLabs?: { ok: boolean; error?: string } };
+      if (body.lead) return body.lead;
     } catch (err) {
       console.warn("Falling back to demo call request", err);
     }

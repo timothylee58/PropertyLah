@@ -154,6 +154,8 @@ export function channelLabel(channel: Channel): string {
       return "WhatsApp";
     case "web":
       return "Web";
+    case "telegram":
+      return "Telegram";
     case "phone":
       return "Phone";
     default:

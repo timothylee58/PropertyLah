@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
       leadScore = lead.score;
     }
 
-    const channelName = channel === "telegram" ? "Telegram" : "WhatsApp";
+    const channelName = channel === "telegram" ? "Telegram" : channel === "web" ? "the web" : "WhatsApp";
     return NextResponse.json({
       viewing,
       confirmationMessage: `✅ Viewing confirmed for ${listing.name} ${slot.label.toLowerCase()}. I’ve sent the confirmation and calendar details here on ${channelName}.`,

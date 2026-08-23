@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Lead } from "@/lib/types";
-import { getLead, takeOverConversation, requestAiCall, assignLead } from "@/lib/api";
+import { getLead, takeOverConversation, requestAiCall, assignLead, IS_DEMO } from "@/lib/api";
 import { formatDate, timeAgo, statusColor, statusLabel, scoreLabel, conversationStatusColor, conversationStatusLabel } from "@/lib/utils";
 import { LeadDetailPanel } from "@/components/dashboard/lead-detail-panel";
 import { ChatMessage } from "@/components/chat/chat-message";
@@ -38,6 +38,9 @@ export default function LeadDetailPage() {
     if (!lead) return;
     const updated = await requestAiCall(lead.id);
     if (updated) setLead(updated);
+    if (IS_DEMO && typeof window !== "undefined") {
+      window.open(`/call?leadId=${lead.id}`, "_blank", "noopener,noreferrer");
+    }
   };
 
   const handleAssign = async () => {

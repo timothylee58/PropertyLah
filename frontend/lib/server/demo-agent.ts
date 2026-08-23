@@ -170,7 +170,7 @@ export async function runDemoAgent(req: AgentChatRequest): Promise<AgentResponse
     }
     return {
       message:
-        "Of course. I’ve flagged this conversation for a human property consultant. They will continue from here shortly.",
+        "Of course. I’m Sara — I’ve flagged this conversation for a human property consultant. They will continue from here shortly.",
       sessionId,
       leadId,
       conversationStatus: "human_handling",
@@ -242,7 +242,7 @@ export async function runDemoAgent(req: AgentChatRequest): Promise<AgentResponse
     const q = updateQualification(qualification, message);
     return {
       message:
-        "Hai! Boleh. Berapakah bajet anda, dan adakah anda sudah mendapat kelulusan pinjaman? Saya juga boleh cadangkan unit dan aturkan sesi lawatan.",
+        "Hai, saya Sara dari KeyNest AI! Boleh. Berapakah bajet anda, dan adakah anda sudah mendapat kelulusan pinjaman? Saya juga boleh cadangkan unit dan aturkan sesi lawatan.",
       sessionId,
       leadId,
       qualification: q,
@@ -294,6 +294,7 @@ export async function runDemoAgent(req: AgentChatRequest): Promise<AgentResponse
     if (!selectedId) selectedId = "klcc-residences-3br";
     const listing = findListingByName(selectedId) || listings[0];
     const slot = findSlotByText(message) || getViewingSlots()[0];
+    const channelName = channel === "telegram" ? "Telegram" : channel === "web" ? "the web" : "WhatsApp";
     const viewing: Viewing = {
       bookingId: `bkg-${Date.now()}`,
       id: `bkg-${Date.now()}`,
@@ -310,7 +311,7 @@ export async function runDemoAgent(req: AgentChatRequest): Promise<AgentResponse
     };
     const score = calculateLeadScore(q);
     return {
-      message: `✅ Viewing confirmed for ${listing.name} ${slot.label.toLowerCase()}. I’ve sent the confirmation and calendar details here on ${channel === "telegram" ? "Telegram" : "WhatsApp"}.`,
+      message: `✅ Viewing confirmed for ${listing.name} ${slot.label.toLowerCase()}. I’ve sent the confirmation and calendar details here on ${channelName}.`,
       sessionId,
       leadId,
       qualification: q,
@@ -379,7 +380,7 @@ export async function runDemoAgent(req: AgentChatRequest): Promise<AgentResponse
   // Stage-based qualification questions
   if (!q.budgetMax) {
     return {
-      message: `Hi ${leadName.includes(" ") ? leadName.split(" ")[0] : leadName} 👋 I can help with that. What’s your budget, and how many bedrooms are you looking for?`,
+      message: `Hi ${leadName.includes(" ") ? leadName.split(" ")[0] : leadName} 👋 I’m Sara from KeyNest AI. I can help with that. What’s your budget, and how many bedrooms are you looking for?`,
       sessionId,
       leadId,
       qualification: q,

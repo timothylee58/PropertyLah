@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Lead, Listing, ViewingSlot } from "@/lib/types";
-import { getConversations, sendSimulatedInboundMessage, takeOverConversation, requestAiCall, assignLead } from "@/lib/api";
+import { getConversations, sendSimulatedInboundMessage, takeOverConversation, requestAiCall, assignLead, IS_DEMO } from "@/lib/api";
 import { ConversationList } from "@/components/inbox/conversation-list";
 import { LeadIntelligencePanel } from "@/components/inbox/lead-intelligence-panel";
 import { ChatMessage } from "@/components/chat/chat-message";
@@ -67,6 +67,9 @@ export default function InboxPage() {
     if (!selected) return;
     const updated = await requestAiCall(selected.id, "ai");
     if (updated) updateLead(updated);
+    if (IS_DEMO && typeof window !== "undefined") {
+      window.open(`/call?leadId=${selected.id}`, "_blank", "noopener,noreferrer");
+    }
   };
 
   const handleSelectListing = async (listing: Listing) => {

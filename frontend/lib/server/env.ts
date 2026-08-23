@@ -28,6 +28,15 @@ export const VAPI_WEBHOOK_SECRET = process.env.VAPI_WEBHOOK_SECRET || "";
 export const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || "";
 export const TELEGRAM_WEBHOOK_SECRET = process.env.TELEGRAM_WEBHOOK_SECRET || "";
 
+export const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY || "";
+export const ELEVENLABS_AGENT_ID = process.env.ELEVENLABS_AGENT_ID || "";
+export const ELEVENLABS_PHONE_NUMBER_ID = process.env.ELEVENLABS_PHONE_NUMBER_ID || "";
+export const ELEVENLABS_PROVIDER = process.env.ELEVENLABS_PROVIDER || "twilio";
+export const ELEVENLABS_MODEL_ID = process.env.ELEVENLABS_MODEL_ID || "eleven_multilingual_v2";
+export const ELEVENLABS_VOICE_ID = process.env.ELEVENLABS_VOICE_ID || "";
+export const ELEVENLABS_VOICE_ID_EN = process.env.ELEVENLABS_VOICE_ID_EN || ELEVENLABS_VOICE_ID;
+export const ELEVENLABS_VOICE_ID_MS = process.env.ELEVENLABS_VOICE_ID_MS || ELEVENLABS_VOICE_ID;
+
 export function hasQwenConfig(): boolean {
   return Boolean(QWEN_API_KEY && QWEN_BASE_URL && QWEN_MODEL);
 }
@@ -42,4 +51,12 @@ export function hasSupabaseConfig(): boolean {
 
 export function hasTelegramConfig(): boolean {
   return Boolean(TELEGRAM_BOT_TOKEN);
+}
+
+export function hasElevenLabsConfig(): boolean {
+  return Boolean(ELEVENLABS_API_KEY);
+}
+
+export function hasElevenLabsTts(): boolean {
+  return Boolean(ELEVENLABS_API_KEY && (ELEVENLABS_VOICE_ID || ELEVENLABS_VOICE_ID_EN));
 }

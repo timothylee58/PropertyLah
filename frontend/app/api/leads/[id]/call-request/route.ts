@@ -29,7 +29,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       lead,
       callStatus: "requested",
       message:
-        "Call request recorded for agent follow-up. WhatsApp and AI call events remain simulated unless a verified provider is configured.",
+        "Call request recorded. This is a web demo — no real phone call or Twilio/ElevenLabs request is made.",
     });
   } catch (err) {
     console.error("POST /api/leads/[id]/call-request error:", err);

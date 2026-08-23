@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { IS_DEMO, hasQwenConfig, hasHermesConfig, hasSupabaseConfig, hasTelegramConfig } from "@/lib/server/env";
+import { IS_DEMO, hasQwenConfig, hasHermesConfig, hasSupabaseConfig, hasTelegramConfig, hasElevenLabsConfig } from "@/lib/server/env";
 
 export const runtime = "nodejs";
 
@@ -11,5 +11,6 @@ export async function GET() {
     hermesConfigured: hasHermesConfig(),
     supabaseConfigured: hasSupabaseConfig(),
     telegramConfigured: hasTelegramConfig(),
+    elevenLabsConfigured: hasElevenLabsConfig(),
   });
 }

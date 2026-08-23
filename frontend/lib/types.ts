@@ -102,6 +102,7 @@ export interface Lead {
   id: string;
   name: string;
   phoneMasked: string;
+  phone?: string;
   source: string;
   channel: Channel;
   intent: LeadIntent;
@@ -134,6 +135,7 @@ export interface Lead {
   actions?: AgentAction[];
   handoffRequired?: boolean;
   telegramChatId?: number;
+  elevenLabsCallId?: string;
 }
 
 export interface ChatRequest {
