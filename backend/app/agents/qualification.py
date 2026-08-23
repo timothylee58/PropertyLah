@@ -1,8 +1,18 @@
+from functools import lru_cache
+
 from openai import OpenAI
 from app.config import settings
 
-# Qwen exposes an OpenAI-compatible endpoint via DashScope — reuse the openai SDK
-client = OpenAI(api_key=settings.QWEN_API_KEY, base_url=settings.QWEN_BASE_URL)
+
+@lru_cache(maxsize=1)
+def get_client() -> OpenAI:
+    """Qwen speaks the OpenAI protocol via DashScope, so reuse the openai SDK.
+
+    Built lazily: OpenAI() raises without an API key, and the app must still
+    import and serve the calendar/webhook routes when Qwen isn't configured.
+    """
+    return OpenAI(api_key=settings.QWEN_API_KEY, base_url=settings.QWEN_BASE_URL)
+
 
 SYSTEM_PROMPT = """You are Ejen, a voice assistant for a Malaysian property agency.
 This call may be recorded for quality and training purposes — always disclose this
@@ -17,13 +27,15 @@ Your job, in order:
 3. If they reference a specific listing or property, call verify_listing before
    confirming any details about it — never state a listing's price or availability
    from memory, always verify first.
-4. If qualified and interested, call book_appointment to offer real available slots.
+4. If qualified and interested, call get_available_slots and read out the slot
+   labels you get back. Never invent or guess times. Once the caller picks one,
+   call book_appointment with that slot's exact `start` value.
 5. Always call save_lead at the end of the conversation with whatever you learned,
    even if the lead is not qualified.
 
-Never invent property details, prices, or availability. If verify_listing fails
-or the listing looks inconsistent, tell the caller honestly and offer to have a
-human agent follow up instead of guessing.
+Never invent property details, prices, availability, or appointment times. If a
+tool returns an error or an `instruction` field, follow that instruction — offer
+a human callback rather than guessing or promising anything.
 """
 
 TOOLS = [
@@ -31,11 +43,17 @@ TOOLS = [
         "type": "function",
         "function": {
             "name": "verify_listing",
-            "description": "Verify a property listing reference is real and get its current details before discussing it.",
+            "description": (
+                "Verify a property listing reference is real and get its current details "
+                "before discussing it."
+            ),
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "property_reference": {"type": "string", "description": "Listing ID, address, or description caller gave"}
+                    "property_reference": {
+                        "type": "string",
+                        "description": "Listing ID, address, or description caller gave",
+                    }
                 },
                 "required": ["property_reference"],
             },
@@ -44,13 +62,30 @@ TOOLS = [
     {
         "type": "function",
         "function": {
+            "name": "get_available_slots",
+            "description": (
+                "List the next real available viewing slots. Call this before offering "
+                "any time to the caller."
+            ),
+            "parameters": {"type": "object", "properties": {}},
+        },
+    },
+    {
+        "type": "function",
+        "function": {
             "name": "book_appointment",
-            "description": "Book a viewing or consultation appointment for the caller.",
+            "description": "Book one of the slots returned by get_available_slots.",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "preferred_datetime": {"type": "string"},
+                    "preferred_datetime": {
+                        "type": "string",
+                        "description": "The chosen slot's `start` value, copied verbatim from get_available_slots",
+                    },
                     "lead_type": {"type": "string", "enum": ["buyer", "tenant", "maintenance"]},
+                    "caller_name": {"type": "string"},
+                    "caller_email": {"type": "string", "description": "Only if the caller volunteers one"},
+                    "notes": {"type": "string", "description": "Property reference and anything the agent should know"},
                 },
                 "required": ["preferred_datetime", "lead_type"],
             },
@@ -69,7 +104,10 @@ TOOLS = [
                     "preferred_area": {"type": "string"},
                     "timeline": {"type": "string"},
                     "language": {"type": "string"},
-                    "qualification_score": {"type": "integer"},
+                    "qualification_score": {"type": "integer", "description": "0-100; 60 or above counts as qualified"},
+                    "caller_name": {"type": "string"},
+                    "property_reference": {"type": "string"},
+                    "listing_verified": {"type": "boolean"},
                     "notes": {"type": "string"},
                 },
                 "required": ["lead_type"],
@@ -82,7 +120,7 @@ TOOLS = [
 def get_completion(messages: list[dict]) -> dict:
     """Called by the Vapi custom-LLM webhook for each conversation turn."""
     full_messages = [{"role": "system", "content": SYSTEM_PROMPT}] + messages
-    response = client.chat.completions.create(
+    response = get_client().chat.completions.create(
         model=settings.QWEN_MODEL,
         messages=full_messages,
         tools=TOOLS,

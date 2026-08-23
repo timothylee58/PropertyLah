@@ -12,13 +12,17 @@ create table if not exists leads (
     property_reference text,
     listing_verified boolean,
     notes text,
+    -- one lead per Vapi call: lets retried webhook deliveries upsert instead of duplicate
+    vapi_call_id text unique,
+    appointment_at timestamptz,
+    booking_uid text,
     created_at timestamptz default now()
 );
 
 create table if not exists call_logs (
     id uuid primary key default gen_random_uuid(),
     lead_id uuid references leads(id),
-    vapi_call_id text not null,
+    vapi_call_id text not null unique,
     direction text,
     transcript text,
     duration_seconds int,
@@ -28,6 +32,9 @@ create table if not exists call_logs (
     ended_at timestamptz,
     created_at timestamptz default now()
 );
+
+create index if not exists leads_created_at_idx on leads (created_at desc);
+create index if not exists call_logs_lead_id_idx on call_logs (lead_id);
 
 -- RLS: enable before any real deploy, left open here for hackathon-speed iteration
 alter table leads enable row level security;

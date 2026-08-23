@@ -31,8 +31,28 @@ cp .env.example .env   # fill in real keys
 uvicorn app.main:app --reload
 ```
 
+Run the tests with `pip install -r requirements-dev.txt && pytest`.
+
 ### Supabase
-Run `supabase/schema.sql` in the Supabase SQL editor for your project.
+Run `supabase/schema.sql` in the Supabase SQL editor for your project. If the
+original schema is already applied, run `supabase/migrations/001_booking_and_idempotency.sql`
+instead — `schema.sql` is `create table if not exists`, so it won't add the new
+columns to an existing project.
+
+### Cal.com booking
+1. Create an API key (Settings → Developer → API keys) and a viewing event type.
+2. Put the key in `CAL_API_KEY` and the event type's numeric id in `CAL_EVENT_TYPE_ID`.
+3. Set `CAL_FALLBACK_ATTENDEE_EMAIL` — Cal.com requires an attendee email and
+   phone callers rarely give one.
+4. `CAL_TIMEZONE` (default `Asia/Kuala_Lumpur`) is what the agent reads out loud;
+   slot `start` values crossing the wire are always UTC.
+
+Smoke test without a phone call:
+```bash
+curl localhost:8000/calendar/slots
+curl -X POST localhost:8000/calendar/book -H 'content-type: application/json' \
+  -d '{"preferred_datetime":"2026-09-01T02:00:00Z","caller_name":"Test"}'
+```
 
 ### Frontend
 
@@ -96,7 +116,18 @@ The frontend expects a normalized API as described in `frontend/INTEGRATION.md`.
    to their API.
 2. Replace `YOUR-RAILWAY-BACKEND-URL` in that file with your deployed backend URL
    once Railway gives you one.
-3. Set `serverUrlSecret` to match `VAPI_WEBHOOK_SECRET` in `.env`.
+3. Set `serverUrlSecret` to match `VAPI_WEBHOOK_SECRET` in `.env`. The webhook
+   rejects anything that carries neither a matching `X-Vapi-Secret` nor a valid
+   `X-Vapi-Signature` HMAC of the raw body; set `VAPI_VERIFY_WEBHOOK=false` for
+   local `curl` testing only.
+
+## Voice tool flow
+`get_available_slots` → agent reads the returned `label`s → `book_appointment`
+with the chosen slot's exact `start`. Bookings are keyed on the Vapi call id, so
+a retried tool call returns the existing booking instead of double-booking, and
+the end-of-call report links its `call_logs` row to the lead from the same call.
+Every calendar failure returns an `instruction` telling the agent to offer a
+human callback rather than inventing a time.
 
 ## Demo checkpoint (decide by ~12:30 on the day)
 If a real phone number isn't provisioned and tested, switch to Vapi's
@@ -106,6 +137,4 @@ demo beats a flaky live call in front of judges.
 ## Known stubs to fill in during the sprint
 - `openclaw_tools.py` — endpoint/schema is a guess, adjust to whatever
   OpenClaw hands out on the day
-- `calendar.py` — pick Cal.com (fastest, no OAuth) or Google Calendar
-  (service account) and wire real booking logic
 - `vapi_assistant.json` — voice ID, backend URLs
