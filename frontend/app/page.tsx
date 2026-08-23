@@ -3,13 +3,14 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Lead } from "@/lib/types";
-import { OverviewData, getOverview } from "@/lib/api";
+import { OverviewData, getOverview, IS_DEMO } from "@/lib/api";
 import { MetricCard } from "@/components/dashboard/metric-card";
 import { PipelineBoard } from "@/components/dashboard/pipeline-board";
 import { ActivityFeed } from "@/components/overview/activity-feed";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import { Users, Target, CalendarCheck, Flame, Clock, ArrowRight, Lightbulb } from "lucide-react";
 
 export default function OverviewPage() {
@@ -41,9 +42,9 @@ export default function OverviewPage() {
             <p className="text-sm text-stone-500">Your WhatsApp property concierge is qualifying leads and booking viewings.</p>
           </div>
           <div className="flex items-center gap-3">
-            <Badge className="bg-emerald-100 text-emerald-700">
-              <span className="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
-              WhatsApp Connected
+            <Badge className={IS_DEMO ? "bg-amber-100 text-amber-700" : "bg-emerald-100 text-emerald-700"}>
+              <span className={cn("mr-1 inline-block h-1.5 w-1.5 rounded-full", IS_DEMO ? "bg-amber-500" : "bg-emerald-500")}></span>
+              {IS_DEMO ? "WhatsApp Demo" : "WhatsApp Connected"}
             </Badge>
             <Button onClick={() => router.push("/inbox")}>
               Open Inbox

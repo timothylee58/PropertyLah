@@ -1,9 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { Inter } from "next/font/google";
 import { AppSidebar } from "@/components/app-sidebar";
 import { Sheet } from "@/components/ui/sheet";
-import { useState } from "react";
+import { cn } from "@/lib/utils";
 import { Menu } from "lucide-react";
 import "./globals.css";
 
@@ -18,12 +19,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
 
   return (
     <html lang="en" className={inter.variable}>
       <body className="min-h-screen bg-warm-50 font-sans antialiased">
         <div className="hidden md:flex">
-          <AppSidebar className="fixed left-0 top-0" />
+          <AppSidebar
+            className="fixed left-0 top-0"
+            collapsed={collapsed}
+            onToggle={setCollapsed}
+          />
         </div>
 
         <header className="fixed left-0 right-0 top-0 z-30 flex h-14 items-center justify-between border-b border-stone-200 bg-white px-4 md:hidden">
@@ -42,7 +48,12 @@ export default function RootLayout({
           </button>
         </header>
 
-        <main className="h-screen overflow-hidden pt-14 md:ml-60 md:pt-0">
+        <main
+          className={cn(
+            "h-screen overflow-hidden pt-14 transition-all duration-300 md:pt-0",
+            collapsed ? "md:ml-16" : "md:ml-60"
+          )}
+        >
           <div className="h-full overflow-auto">{children}</div>
         </main>
 

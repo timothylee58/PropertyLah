@@ -7,6 +7,7 @@ export type CallStatus = "not_requested" | "requested" | "scheduled" | "complete
 export interface Qualification {
   budgetMin?: number;
   budgetMax?: number;
+  budgetLabel?: string;
   location?: string;
   preferredAreas?: string[];
   financing?: "approved" | "cash" | "unknown";
@@ -20,27 +21,42 @@ export interface Qualification {
 export interface Listing {
   id: string;
   name: string;
+  title?: string;
   location: string;
+  area?: string;
   price: number;
   priceDisplay: string;
+  currency?: "MYR";
   beds: number;
+  bedrooms?: number;
   baths: number;
+  bathrooms?: number;
   sqft: number;
+  sizeSqft?: number;
   description: string;
   image: string;
+  imageUrl?: string;
   badge?: string;
+  propertyType?: string;
+  features?: string[];
+  status?: "available" | "reserved" | "sold";
+  featured?: boolean;
 }
 
 export interface ViewingSlot {
   id: string;
   label: string;
   appointmentAt: string;
+  startAt?: string;
+  available?: boolean;
 }
 
 export interface Viewing {
   bookingId: string;
+  id: string;
   confirmed: boolean;
   appointmentAt: string;
+  startAt?: string;
   leadId: string;
   listingId: string;
   slotId: string;
@@ -49,6 +65,7 @@ export interface Viewing {
   propertyReference?: string;
   slot: ViewingSlot;
   channel?: Channel;
+  status?: "pending" | "confirmed" | "cancelled";
 }
 
 export type MessageSender = "lead" | "ai" | "human" | "system";
@@ -57,7 +74,7 @@ export interface MessageMetadata {
   listings?: Listing[];
   slots?: ViewingSlot[];
   booking?: Viewing;
-  actionType?: "qualification" | "listing_match" | "booking" | "call_request";
+  actionType?: "qualification" | "listing_match" | "booking" | "call_request" | "handoff" | "knowledge_lookup";
 }
 
 export interface ConversationMessage {
@@ -72,6 +89,15 @@ export interface ConversationMessage {
   actions?: string[];
 }
 
+export interface TimelineEvent {
+  id: string;
+  type: "inquiry" | "ai_response" | "qualification" | "listing_match" | "viewing_booked" | "call_requested" | "handover" | "agent_note";
+  title: string;
+  description?: string;
+  createdAt: string;
+  agent?: string;
+}
+
 export interface Lead {
   id: string;
   name: string;
@@ -84,6 +110,7 @@ export interface Lead {
   budget?: string;
   budgetLabel: string;
   budgetMax?: number;
+  budgetMin?: number;
   propertyType?: string;
   bedrooms?: number;
   financing?: "approved" | "cash" | "unknown";
@@ -102,15 +129,10 @@ export interface Lead {
   recommendedListings?: Listing[];
   bookedViewing?: Viewing;
   timelineEvents?: TimelineEvent[];
-}
-
-export interface TimelineEvent {
-  id: string;
-  type: "inquiry" | "ai_response" | "qualification" | "listing_match" | "viewing_booked" | "call_requested" | "handover" | "agent_note";
-  title: string;
-  description?: string;
-  createdAt: string;
-  agent?: string;
+  sourcesUsed?: SourceCitation[];
+  rulesApplied?: RuleAudit[];
+  actions?: AgentAction[];
+  handoffRequired?: boolean;
 }
 
 export interface ChatRequest {
@@ -134,10 +156,111 @@ export interface BookingRequest {
   leadId: string;
   listingId: string;
   slotId: string;
+  channel?: Channel;
 }
 
 export interface BookingResponse {
   bookingId: string;
   confirmed: boolean;
   appointmentAt: string;
+  viewing?: Viewing;
+  confirmationMessage?: string;
+  leadScore?: number;
+  leadStatus?: LeadStatus;
+  nextBestAction?: string;
+}
+
+export type KnowledgeCategory = "Property brochure" | "Inventory" | "FAQ" | "Agency policy" | "Market data" | "Other";
+export type KnowledgeScope = string;
+export type KnowledgeStatus = "Processing" | "Indexing" | "Ready" | "Failed" | "Disabled" | "Pending" | "needs_review";
+
+export interface KnowledgeSource {
+  id: string;
+  name: string;
+  category: KnowledgeCategory;
+  scope: KnowledgeScope;
+  status: KnowledgeStatus;
+  version: string;
+  lastUpdated: string;
+  enabled: boolean;
+  size?: string;
+  simulated?: boolean;
+}
+
+export type RulePriority = "High" | "Medium" | "Low";
+export type RuleCategory = "Compliance" | "Escalation" | "Booking" | "Language" | "Other";
+
+export interface AgentRule {
+  id: string;
+  title: string;
+  instruction: string;
+  priority: RulePriority;
+  category: RuleCategory;
+  enabled: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface KnowledgeTestResult {
+  query: string;
+  answer: string;
+  sources: string[];
+  rules: string[];
+  handoff?: boolean;
+  handoffReason?: string;
+}
+
+// ---------------------------------------------------------------------------
+// New unified agent response types (live + demo)
+// ---------------------------------------------------------------------------
+
+export type SourceCategory = "brochure" | "inventory" | "faq" | "policy" | "market_data";
+
+export interface SourceCitation {
+  id: string;
+  name: string;
+  category: SourceCategory;
+}
+
+export interface RuleAudit {
+  id: string;
+  title: string;
+  priority: "high" | "medium" | "low";
+}
+
+export type AgentAction =
+  | "qualification"
+  | "listing_match"
+  | "booking"
+  | "call_request"
+  | "handoff"
+  | "knowledge_lookup";
+
+export interface AgentResponse {
+  message: string;
+  sessionId: string;
+  leadId?: string;
+  qualification?: Qualification;
+  leadScore?: number;
+  leadStatus?: LeadStatus;
+  conversationStatus?: ConversationStatus;
+  listings?: Listing[];
+  suggestedSlots?: ViewingSlot[];
+  viewing?: Viewing;
+  sourcesUsed?: SourceCitation[];
+  rulesApplied?: RuleAudit[];
+  actions?: AgentAction[];
+  nextBestAction?: string;
+  handoffRequired?: boolean;
+  error?: string;
+}
+
+export interface AgentChatRequest {
+  sessionId: string;
+  leadId?: string;
+  channel?: Channel;
+  message: string;
+  conversation?: ConversationMessage[];
+  qualification?: Qualification;
+  leadName?: string;
 }

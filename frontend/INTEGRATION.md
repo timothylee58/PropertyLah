@@ -1,97 +1,68 @@
 # KeyNest AI — Backend & Channel Integration Contract
 
-This document is for the backend engineer (Person A) wiring the real API, Hermes/Qwen agent, Supabase CRM, WhatsApp webhooks, and calendar/voice providers.
+This document describes the Next.js API routes and integration points for the real AI agent, Hermes/Qwen, Supabase CRM, WhatsApp webhooks, and optional calendar/voice providers.
 
 ## Product model
 
 - Customers communicate primarily through **WhatsApp**.
 - The website is an **internal operations dashboard** for agency staff.
-- The backend is the source of truth for leads, conversations, viewings, and call requests.
+- The backend (same-origin Next.js API routes) is the source of truth for leads, conversations, viewings, and call requests.
 - The frontend falls back to a deterministic **demo mode** when `NEXT_PUBLIC_DEMO_MODE=true`.
 
 ## Environment variables
 
-All public env vars are read at build time in `lib/api.ts`.
+Public env vars are read at build time. Server-only secrets are read at runtime in Next.js route handlers.
 
 ```bash
-NEXT_PUBLIC_DEMO_MODE=true        # set to false to call the live backend
-NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
+# Public (build-time)
+NEXT_PUBLIC_DEMO_MODE=true        # set to false for live mode
+NEXT_PUBLIC_API_BASE_URL=         # optional fallback for external backend
+
+# Server-only (never NEXT_PUBLIC_)
+QWEN_API_KEY=
+QWEN_BASE_URL=https://dashscope-intl.aliyuncs.com/compatible-mode/v1
+QWEN_MODEL=qwen-plus
+HERMES_API_URL=
+HERMES_API_KEY=
+SUPABASE_URL=
+SUPABASE_SERVICE_ROLE_KEY=
 ```
 
-When `NEXT_PUBLIC_DEMO_MODE` is `true`, the frontend uses the mock data and simulation functions in `lib/mock-data.ts` and `lib/api.ts`.
+When `NEXT_PUBLIC_DEMO_MODE` is `true`, the frontend uses mock data and `localStorage`. When `false`, the frontend calls the same-origin `/api/*` routes (or the URL in `NEXT_PUBLIC_API_BASE_URL` if one is set).
 
-When set to `false`, the frontend calls the backend at `NEXT_PUBLIC_API_BASE_URL`.
+## API routes
 
-## Implementation status
+All routes are implemented as Next.js App Router route handlers under `frontend/app/api/`.
 
-The backend now serves the four read endpoints the dashboard fetches, adapted from
-the `leads` and `call_logs` tables in `backend/app/api/routes/dashboard.py`:
+### 1. `GET /api/health`
 
-| Endpoint | Status |
-| --- | --- |
-| `GET /api/overview` | live — counters and activity feed derived from stored leads |
-| `GET /api/leads` | live |
-| `GET /api/leads/:id` | live — the call transcript appears as a single `system` message |
-| `GET /api/viewings` | live — from leads that have an `appointment_at` |
-| `POST /api/conversations/:id/*`, `POST /api/calls`, `POST /api/viewings` | not implemented — the dashboard mutates local state only |
-
-What the voice agent cannot supply yet, and so is absent rather than faked:
-
-- **Listings.** There is no listings table; the agent records a
-  `property_reference` string, so `Viewing.listing` is optional and the UI falls
-  back to that reference.
-- **Conversations.** Phone calls yield one transcript, not a message thread, and
-  there is no WhatsApp channel yet — so `conversationStatus` is always `closed`
-  and `recommendedListings` is never populated.
-- **Qualification detail.** `budgetMax` is parsed best-effort out of the free-text
-  `budget_range`; `financing`, `propertyType` and `bedrooms` are not captured.
-- **`medianFirstResponse`** — no inbound-timestamp metric is recorded, so it
-  renders as `—`.
-
-Mapping notes: `lead_type` `tenant` → intent `renter`; statuses
-`appointment_booked` → `booked` and `disqualified`/`scam_flagged` → `nurture`;
-phone numbers are masked server-side before they reach the browser.
-
-## Endpoint reference
-
-The live functions live in `lib/api.ts`.
-
-### 1. `GET /api/overview`
-
-Returns the dashboard overview data:
+Returns mode and provider configuration status without exposing secrets.
 
 ```json
 {
-  "newLeads": 12,
-  "qualifiedLeads": 8,
-  "bookedViewings": 4,
-  "hotLeads": 3,
-  "medianFirstResponse": "< 1 min",
-  "activeConversations": 8,
-  "activities": [ ... ],
-  "leads": [ ... ],
-  "viewings": [ ... ]
+  "ok": true,
+  "mode": "demo" | "live",
+  "qwenConfigured": false,
+  "hermesConfigured": false,
+  "supabaseConfigured": false
 }
 ```
 
-### 2. `GET /api/leads`
+### 2. `POST /api/agent/chat`
 
-Return an array of `Lead` objects. Used on `/leads`.
-
-### 3. `GET /api/leads/:id`
-
-Return a single `Lead` object with conversation and timeline. Used on `/leads/[id]`.
-
-### 4. `POST /api/conversations/:id/messages`
-
-Triggered when a new WhatsApp message arrives (or is simulated).
+Main agent endpoint. Accepts a customer message and returns a structured agent response.
 
 **Request**
 
 ```json
 {
-  "content": "Hi, I’m looking for a 3-bedroom condo near KLCC...",
-  "channel": "whatsapp"
+  "sessionId": "aisha-rahman",
+  "leadId": "aisha-rahman",
+  "leadName": "Aisha Rahman",
+  "channel": "whatsapp",
+  "message": "Hi, I’m looking for a 3-bedroom condo near KLCC...",
+  "conversation": [...],
+  "qualification": {...}
 }
 ```
 
@@ -99,63 +70,91 @@ Triggered when a new WhatsApp message arrives (or is simulated).
 
 ```json
 {
-  "message": {
-    "id": "string",
-    "conversationId": "string",
-    "sender": "ai",
-    "channel": "whatsapp",
-    "content": "...",
-    "createdAt": "ISO-8601",
-    "deliveryStatus": "sent",
-    "metadata?": {
-      "listings?": [ ... ],
-      "slots?": [ ... ],
-      "booking?": { ... },
-      "actionType?": "qualification" | "listing_match" | "booking" | "call_request"
-    }
-  },
-  "lead": { ... }
+  "message": "Thanks...",
+  "sessionId": "aisha-rahman",
+  "leadId": "aisha-rahman",
+  "qualification": {...},
+  "leadScore": 85,
+  "leadStatus": "qualified",
+  "conversationStatus": "ai_handling",
+  "listings": [...],
+  "suggestedSlots": [...],
+  "viewing": {...},
+  "sourcesUsed": [{"id": "ks-2", "name": "Listings_August_2026.csv", "category": "inventory"}],
+  "rulesApplied": [{"id": "rule-1", "title": "Do not guarantee availability", "priority": "high"}],
+  "actions": ["qualification", "listing_match"],
+  "nextBestAction": "...",
+  "handoffRequired": false
 }
 ```
 
-### 5. `POST /api/conversations/:id/takeover`
+In live mode the route calls Qwen (or Hermes) with tool definitions and returns an honest 503 error if the provider is not configured.
 
-Set `conversationStatus` to `human_handling` and add a handover timeline event.
+### 3. `POST /api/listings/search`
 
-### 6. `POST /api/conversations/:id/assign`
+Search the approved inventory.
 
-**Request**
+### 4. `GET /api/viewings`
 
-```json
-{ "agentId": "agent-123" }
-```
+List viewings.
 
-Set `assignedAgent` and record an assignment timeline event.
+### 5. `POST /api/viewings`
 
-### 7. `POST /api/calls`
+Create a viewing and update the lead.
 
 **Request**
 
 ```json
 {
-  "leadId": "string",
-  "listingId?": "string"
+  "leadId": "aisha-rahman",
+  "listingId": "klcc-residences-3br",
+  "slotId": "slot-tomorrow-15",
+  "channel": "whatsapp"
 }
 ```
 
-Create an AI call request. Set `callStatus` to `requested` and add a `call_requested` timeline event.
+### 6. `GET /api/viewings/slots`
 
-### 8. `GET /api/viewings`
+Return available viewing slots.
 
-Return an array of `Viewing` objects. Used on `/viewings`.
+### 7. `GET /api/leads`
 
-### 9. WhatsApp webhook
+Return an array of `Lead` objects. Used on `/leads`.
 
-Incoming WhatsApp Business Platform messages should be normalized by the backend into `ConversationMessage` objects and stored in Supabase. The backend then calls Hermes/Qwen to generate the next response, which is sent back via WhatsApp and also made available to the frontend.
+### 8. `GET /api/leads/:id`
 
-### 10. Calendar booking
+Return a single `Lead` with conversation and timeline.
 
-When a viewing is confirmed, create the calendar event and return a `Viewing` object with `confirmed: true` and `appointmentAt`.
+### 9. `PATCH /api/leads/:id`
+
+Update a lead record.
+
+### 10. `POST /api/leads/:id/call-request`
+
+Record an AI or human call request and update `callStatus`.
+
+### 11. Knowledge
+
+- `GET /api/knowledge/sources`
+- `POST /api/knowledge/sources` (multipart/form-data)
+- `PATCH /api/knowledge/sources/:id`
+- `DELETE /api/knowledge/sources/:id`
+- `POST /api/knowledge/test`
+
+### 12. Agent rules
+
+- `GET /api/agent/rules`
+- `POST /api/agent/rules`
+- `PATCH /api/agent/rules/:id`
+- `DELETE /api/agent/rules/:id`
+
+## WhatsApp webhook
+
+Incoming WhatsApp Business Platform messages should be normalized into `AgentChatRequest` objects and sent to `POST /api/agent/chat`. The response `message` can be sent back to the customer and also stored in the CRM.
+
+## Calendar booking
+
+When a viewing is confirmed, `POST /api/viewings` creates a CRM record. To create a real calendar event, configure a Google Calendar service account or Cal.com integration and extend `createViewing` logic accordingly.
 
 ## Canonical types
 
@@ -166,19 +165,13 @@ All types live in `lib/types.ts`:
 - `ViewingSlot` / `Viewing`
 - `ConversationMessage`
 - `TimelineEvent`
+- `AgentResponse`
+- `AgentChatRequest`
+- `BookingRequest` / `BookingResponse`
 - `LeadStatus` = `new` | `qualified` | `booked` | `nurture`
 - `ConversationStatus` = `ai_handling` | `human_handling` | `closed`
 - `CallStatus` = `not_requested` | `requested` | `scheduled` | `completed`
 - `Channel` = `whatsapp` | `web` | `phone`
-
-## Backend events the frontend depends on
-
-1. **Overview feed** — fresh activity events whenever the AI qualifies a lead, matches listings, books a viewing, or a call is requested.
-2. **Lead list** — normalized, filterable lead records from the CRM.
-3. **Lead detail** — full conversation, qualification, timeline, and next best action.
-4. **Incoming messages** — a normalized AI response returned after each customer WhatsApp message, including any `listings`, `slots`, or `booking`.
-5. **Takeover / assign / call request** — immediate status updates reflected in the UI and timeline.
-6. **Viewings** — a list of confirmed/pending viewings for the calendar page.
 
 ## Switching modes
 
@@ -188,7 +181,9 @@ NEXT_PUBLIC_DEMO_MODE=true
 
 # Live
 NEXT_PUBLIC_DEMO_MODE=false
-NEXT_PUBLIC_API_BASE_URL=https://your-backend.example.com
+QWEN_API_KEY=<key>
+QWEN_BASE_URL=https://dashscope-intl.aliyuncs.com/compatible-mode/v1
+QWEN_MODEL=qwen-plus
 ```
 
 Then rebuild/redeploy:
@@ -201,5 +196,5 @@ npm run build
 
 - The frontend does not require authentication.
 - Do not expose secret keys in `NEXT_PUBLIC_` variables; those are embedded in the client bundle.
-- If a live endpoint is unavailable, the frontend silently falls back to mock data for that call and logs a warning.
+- In live mode, failures return honest HTTP errors and do **not** silently fall back to mock data.
 - Phone numbers are masked in demo mode (`+60 12-**** 4821`); production should mask PII in the dashboard.

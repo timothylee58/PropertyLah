@@ -1,6 +1,6 @@
 "use client";
 
-import { ConversationMessage } from "@/lib/types";
+import { ConversationMessage, Listing, ViewingSlot } from "@/lib/types";
 import { cn, timeAgo } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { ListingCard } from "./listing-card";
@@ -11,8 +11,8 @@ import { Check, CheckCheck } from "lucide-react";
 interface ChatMessageProps {
   message: ConversationMessage;
   leadName?: string;
-  onSelectListing?: (id: string) => void;
-  onSelectSlot?: (id: string) => void;
+  onSelectListing?: (listing: Listing) => void;
+  onSelectSlot?: (slot: ViewingSlot) => void;
   disabled?: boolean;
 }
 
@@ -97,7 +97,7 @@ export function ChatMessage({
               <ListingCard
                 key={listing.id}
                 listing={listing}
-                onSelect={onSelectListing ? () => onSelectListing(listing.id) : undefined}
+                onSelect={onSelectListing ? () => onSelectListing(listing) : undefined}
                 disabled={disabled}
               />
             ))}
@@ -108,7 +108,7 @@ export function ChatMessage({
           <div className="w-full pt-1">
             <AppointmentPicker
               slots={message.metadata.slots}
-              onSelect={(slot) => onSelectSlot(slot.id)}
+              onSelect={(slot) => onSelectSlot(slot)}
               disabled={disabled}
             />
           </div>
