@@ -9,6 +9,8 @@ export type Lead = {
   preferred_area?: string;
   qualification_score?: number;
   status: string;
+  appointment_at?: string;
+  booking_uid?: string;
   created_at: string;
 };
 

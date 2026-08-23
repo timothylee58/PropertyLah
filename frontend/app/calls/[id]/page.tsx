@@ -31,6 +31,18 @@ export default async function CallDetailPage({ params }: { params: { id: string 
           <dt className="text-slate-500">Score</dt>
           <dd>{lead.qualification_score ?? "—"}/100</dd>
         </div>
+        <div>
+          <dt className="text-slate-500">Appointment</dt>
+          <dd>
+            {lead.appointment_at
+              ? new Date(lead.appointment_at).toLocaleString("en-MY", {
+                  timeZone: "Asia/Kuala_Lumpur",
+                  dateStyle: "medium",
+                  timeStyle: "short",
+                })
+              : "—"}
+          </dd>
+        </div>
       </dl>
       {lead.notes && (
         <div className="border-t pt-4">

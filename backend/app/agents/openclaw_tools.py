@@ -13,8 +13,8 @@ async def verify_listing(property_reference: str) -> dict:
                 headers={"Authorization": f"Bearer {settings.OPENCLAW_API_KEY}"},
                 json={
                     "task": f"Look up this Malaysian property listing and confirm it "
-                             f"is real and currently active: {property_reference}. "
-                             f"Return price, availability, and listing URL if found.",
+                            f"is real and currently active: {property_reference}. "
+                            f"Return price, availability, and listing URL if found.",
                 },
             )
             resp.raise_for_status()

@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional
+from datetime import datetime
 from enum import Enum
 
 
@@ -32,3 +33,6 @@ class Lead(BaseModel):
     property_reference: Optional[str] = None
     listing_verified: Optional[bool] = None
     notes: Optional[str] = None
+    vapi_call_id: Optional[str] = None
+    appointment_at: Optional[datetime] = None
+    booking_uid: Optional[str] = None
