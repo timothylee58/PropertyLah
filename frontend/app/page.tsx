@@ -22,6 +22,12 @@ import {
   Phone,
   FileText,
   Search,
+  TrendingUp,
+  Clock,
+  MapPin,
+  Home,
+  BadgeCheck,
+  Zap,
 } from "lucide-react";
 
 const navLinks = [
@@ -38,7 +44,7 @@ const stats = [
   { value: "4.9/5", label: "agent satisfaction" },
 ];
 
-const features = [
+const useCases = [
   {
     icon: Bot,
     title: "AI Qualification",
@@ -104,8 +110,7 @@ const deepFeatures = [
       "Reminders and follow-ups scheduled for you",
     ],
     visual: "book",
-  },
-];
+  },];
 
 const chatMessages = [
   { side: "right", text: "Hi, looking for 3-bedroom condo in KL. Budget around RM 600k." },
@@ -114,6 +119,24 @@ const chatMessages = [
   { side: "left", text: "Found 2 listings that match. Both near KLCC, 3 beds, below RM 600k. Want to view this Saturday?", name: "Aisha" },
   { side: "right", text: "Yes, 2pm works." },
   { side: "left", text: "Booked! Saturday 2pm at Residensi Harmoni. I’ll send the viewing details now. ✓", name: "Aisha" },
+];
+
+const steps = [
+  {
+    step: "01",
+    title: "Connect your channels",
+    description: "Link WhatsApp, Telegram, or add a web chat widget. No code required.",
+  },
+  {
+    step: "02",
+    title: "Upload your inventory",
+    description: "Add listings, price lists, FAQs and agency rules. The AI only answers from your sources.",
+  },
+  {
+    step: "03",
+    title: "Watch it book viewings",
+    description: "The AI qualifies, matches, schedules, and updates your CRM — while you focus on closing.",
+  },
 ];
 
 const pricing = [
@@ -218,22 +241,10 @@ const testimonials = [
 ];
 
 const footerLinks = [
-  {
-    title: "Product",
-    links: ["Features", "Pricing", "WhatsApp AI", "CRM", "Calendar"],
-  },
-  {
-    title: "Company",
-    links: ["About", "Blog", "Careers", "Contact"],
-  },
-  {
-    title: "Resources",
-    links: ["Docs", "API Reference", "Help Center", "Status"],
-  },
-  {
-    title: "Legal",
-    links: ["Privacy", "Terms", "Security"],
-  },
+  { title: "Product", links: ["Features", "Pricing", "WhatsApp AI", "CRM", "Calendar"] },
+  { title: "Company", links: ["About", "Blog", "Careers", "Contact"] },
+  { title: "Resources", links: ["Docs", "API Reference", "Help Center", "Status"] },
+  { title: "Legal", links: ["Privacy", "Terms", "Security"] },
 ];
 
 export default function LandingPage() {
@@ -335,7 +346,9 @@ export default function LandingPage() {
 
               <h1 className="text-4xl font-semibold leading-tight tracking-tight text-stone-900 sm:text-5xl lg:text-6xl">
                 Turn your WhatsApp leads into{" "}
-                <span className="font-serif italic text-teal-700">booked viewings</span>.
+                <span className="bg-gradient-to-r from-teal-700 to-emerald-500 bg-clip-text font-serif italic text-transparent">
+                  booked viewings
+                </span>.
               </h1>
 
               <p className="mt-6 text-lg leading-relaxed text-stone-600">
@@ -397,10 +410,7 @@ export default function LandingPage() {
                   {chatMessages.map((msg, i) => (
                     <div
                       key={i}
-                      className={cn(
-                        "flex",
-                        msg.side === "right" ? "justify-end" : "justify-start"
-                      )}
+                      className={cn("flex", msg.side === "right" ? "justify-end" : "justify-start")}
                     >
                       {msg.side === "left" && (
                         <div className="mr-2 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal-100 text-teal-700">
@@ -445,7 +455,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* What you get */}
+      {/* Use cases */}
       <section id="features" className="py-20 sm:py-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
@@ -459,7 +469,7 @@ export default function LandingPage() {
           </div>
 
           <div className="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {features.map((feature) => (
+            {useCases.map((feature) => (
               <div
                 key={feature.title}
                 className="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm transition hover:shadow-md"
@@ -513,6 +523,94 @@ export default function LandingPage() {
                     ))}
                   </ul>
                 </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Dark platform section */}
+      <section className="bg-stone-900 py-20 sm:py-28 text-white">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 items-center">
+            <div>
+              <h2 className="text-3xl font-semibold leading-tight sm:text-4xl">
+                One dashboard for your{" "}
+                <span className="bg-gradient-to-r from-teal-400 to-emerald-400 bg-clip-text text-transparent font-serif italic">
+                  entire agency
+                </span>.
+              </h2>
+              <p className="mt-4 text-stone-300">
+                Monitor every conversation, lead, and viewing from a single command center. Take over when the AI needs a human touch.
+              </p>
+              <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                {[
+                  "Unified inbox for all channels",
+                  "Hot lead scoring and routing",
+                  "Viewings calendar and reminders",
+                  "Knowledge base and rule audit",
+                ].map((point) => (
+                  <div key={point} className="flex items-center gap-2 text-sm text-stone-300">
+                    <CheckCircle className="h-4 w-4 text-teal-400" />
+                    {point}
+                  </div>
+                ))}
+              </div>
+              <div className="mt-8">
+                <Button onClick={goToDashboard} className="rounded-full px-6 py-3 text-base bg-teal-500 hover:bg-teal-600 text-white">
+                  Open Dashboard
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            <div className="rounded-3xl border border-stone-700 bg-stone-800 p-6 shadow-2xl">
+              <div className="mb-4 flex items-center gap-2">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-teal-500/20 text-teal-300">
+                  <TrendingUp className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="font-semibold text-white">Command Center</p>
+                  <p className="text-xs text-stone-400">Live pipeline</p>
+                </div>
+              </div>
+              <div className="space-y-3">
+                {[
+                  { label: "New WhatsApp Leads", value: "12", icon: Users },
+                  { label: "Qualified Leads", value: "8", icon: BadgeCheck },
+                  { label: "Viewings Booked", value: "5", icon: Calendar },
+                  { label: "Hot Leads", value: "3", icon: Zap },
+                ].map((row) => (
+                  <div key={row.label} className="flex items-center justify-between rounded-2xl bg-stone-700/50 p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-stone-600/50 text-teal-300">
+                        <row.icon className="h-4 w-4" />
+                      </div>
+                      <span className="text-sm text-stone-300">{row.label}</span>
+                    </div>
+                    <span className="text-lg font-semibold text-white">{row.value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Steps */}
+      <section className="py-20 sm:py-28 bg-warm-50">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-2xl text-center">
+            <h2 className="text-3xl font-semibold tracking-tight text-stone-900 sm:text-4xl">
+              Up and running in <span className="font-serif italic text-teal-700">minutes</span>.
+            </h2>
+          </div>
+          <div className="mt-14 grid grid-cols-1 gap-8 md:grid-cols-3">
+            {steps.map((step) => (
+              <div key={step.step} className="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm">
+                <span className="text-4xl font-semibold text-stone-200">{step.step}</span>
+                <h3 className="mt-4 text-lg font-semibold text-stone-900">{step.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-stone-600">{step.description}</p>
               </div>
             ))}
           </div>
