@@ -23,18 +23,14 @@ import {
   FileText,
   Search,
   TrendingUp,
-  Clock,
-  MapPin,
-  Home,
-  BadgeCheck,
   Zap,
+  BadgeCheck,
 } from "lucide-react";
 
 const navLinks = [
   { label: "Features", href: "#features" },
   { label: "How it works", href: "#how-it-works" },
   { label: "Pricing", href: "#pricing" },
-  { label: "Testimonials", href: "#testimonials" },
 ];
 
 const stats = [
@@ -70,47 +66,6 @@ const useCases = [
       "Every WhatsApp, Telegram and web lead in one inbox. See who needs a reply and what each deal is worth.",
   },
 ];
-
-const deepFeatures = [
-  {
-    tag: "Qualify",
-    title: "Stop losing leads to slow replies.",
-    highlight: "Instant qualification",
-    description:
-      "Your AI concierge replies in seconds, asks the right questions, and scores every lead so you chase the hot ones first.",
-    points: [
-      "Budget, timeline and financing pre-qualified",
-      "Bahasa Malaysia, English, or rojak — it understands",
-      "Scores update in the CRM automatically",
-    ],
-    visual: "qualify",
-  },
-  {
-    tag: "Match",
-    title: "Find the right listing, every time.",
-    highlight: "Source-cited matches",
-    description:
-      "Upload your inventory once. The agent quotes from your actual listings and knowledge sources, not the internet.",
-    points: [
-      "Matches budget, location, bedrooms and must-haves",
-      "Cites the listing and agency rules behind every answer",
-      "Learns from your price lists and FAQs",
-    ],
-    visual: "match",
-  },
-  {
-    tag: "Book",
-    title: "Book viewings while you sleep.",
-    highlight: "Hands-free scheduling",
-    description:
-      "Offer available slots, confirm the appointment, and send calendar invites — all inside the WhatsApp thread.",
-    points: [
-      "Real-time slot availability",
-      "Automatic calendar and CRM updates",
-      "Reminders and follow-ups scheduled for you",
-    ],
-    visual: "book",
-  },];
 
 const chatMessages = [
   { side: "right", text: "Hi, looking for 3-bedroom condo in KL. Budget around RM 600k." },
@@ -333,115 +288,107 @@ export default function LandingPage() {
 
       {/* Hero */}
       <section className="relative overflow-hidden pt-32 pb-20 sm:pt-40 sm:pb-28">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
-            <div className="max-w-2xl">
-              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white px-3 py-1.5 text-xs font-medium text-stone-600 shadow-sm">
-                <span className="relative flex h-2 w-2">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
-                </span>
-                Malaysia&apos;s WhatsApp-first property agent AI
-              </div>
+        <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white px-3 py-1.5 text-xs font-medium text-stone-600 shadow-sm">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
+            </span>
+            Malaysia&apos;s WhatsApp-first property agent AI
+          </div>
 
-              <h1 className="text-4xl font-semibold leading-tight tracking-tight text-stone-900 sm:text-5xl lg:text-6xl">
-                Turn your WhatsApp leads into{" "}
-                <span className="bg-gradient-to-r from-teal-700 to-emerald-500 bg-clip-text font-serif italic text-transparent">
-                  booked viewings
-                </span>.
-              </h1>
+          <h1 className="text-5xl font-semibold leading-tight tracking-tight text-stone-900 sm:text-6xl lg:text-7xl">
+            PropertyLah,{" "}
+            <span className="bg-gradient-to-r from-teal-700 to-emerald-500 bg-clip-text font-serif italic text-transparent">
+              your AI property agent
+            </span>.
+          </h1>
 
-              <p className="mt-6 text-lg leading-relaxed text-stone-600">
-                An AI concierge that qualifies prospects, matches listings, and schedules viewings
-                — in Bahasa Malaysia or English, 24/7.
-              </p>
+          <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-stone-600">
+            An AI concierge that qualifies prospects, matches listings, and schedules viewings
+            — in Bahasa Malaysia or English, 24/7.
+          </p>
 
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-                <Button
-                  size="lg"
-                  onClick={goToDashboard}
-                  className="w-full rounded-full px-6 text-base sm:w-auto"
-                >
-                  Get Started Today
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-                <a
-                  href="#how-it-works"
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-stone-300 bg-white px-6 py-3 text-sm font-medium text-stone-700 transition hover:bg-stone-50 sm:w-auto"
-                >
-                  Watch demo
-                  <ChevronRight className="h-4 w-4" />
-                </a>
-              </div>
+          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <Button
+              size="lg"
+              onClick={goToDashboard}
+              className="w-full rounded-full px-6 text-base sm:w-auto"
+            >
+              Get Started Today
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+            <a
+              href="#how-it-works"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-stone-300 bg-white px-6 py-3 text-sm font-medium text-stone-700 transition hover:bg-stone-50 sm:w-auto"
+            >
+              Watch demo
+              <ChevronRight className="h-4 w-4" />
+            </a>
+          </div>
 
-              <div className="mt-8 flex flex-wrap items-center gap-4 text-xs font-medium text-stone-500">
-                <span className="flex items-center gap-1.5">
-                  <CheckCircle className="h-3.5 w-3.5 text-emerald-600" />
-                  Cancel anytime
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <CheckCircle className="h-3.5 w-3.5 text-emerald-600" />
-                  Setup in &lt;2 minutes
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <Star className="h-3.5 w-3.5 text-amber-500" />
-                  4.9 · 500+ agents
-                </span>
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-4 text-xs font-medium text-stone-500">
+            <span className="flex items-center gap-1.5">
+              <CheckCircle className="h-3.5 w-3.5 text-emerald-600" />
+              Cancel anytime
+            </span>
+            <span className="flex items-center gap-1.5">
+              <CheckCircle className="h-3.5 w-3.5 text-emerald-600" />
+              Setup in &lt;2 minutes
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Star className="h-3.5 w-3.5 text-amber-500" />
+              4.9 · 500+ agents
+            </span>
+          </div>
+
+          {/* Chat mock */}
+          <div className="relative mx-auto mt-16 max-w-sm overflow-hidden rounded-[2.5rem] border border-stone-200 bg-white shadow-2xl">
+            <div className="bg-teal-700 px-5 py-4 text-white">
+              <div className="flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20">
+                  <Bot className="h-4 w-4" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold">Aisha · PropertyLah AI</p>
+                  <p className="text-[10px] text-teal-100">Online now</p>
+                </div>
               </div>
             </div>
-
-            <div className="relative">
-              <div className="absolute -right-20 -top-20 h-72 w-72 rounded-full bg-teal-100/50 blur-3xl"></div>
-              <div className="absolute -bottom-20 -left-20 h-72 w-72 rounded-full bg-emerald-100/50 blur-3xl"></div>
-
-              <div className="relative mx-auto max-w-sm overflow-hidden rounded-[2.5rem] border border-stone-200 bg-white shadow-2xl">
-                <div className="bg-teal-700 px-5 py-4 text-white">
-                  <div className="flex items-center gap-2">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20">
-                      <Bot className="h-4 w-4" />
+            <div className="space-y-3 bg-stone-50 p-4">
+              {chatMessages.map((msg, i) => (
+                <div
+                  key={i}
+                  className={cn("flex", msg.side === "right" ? "justify-end" : "justify-start")}
+                >
+                  {msg.side === "left" && (
+                    <div className="mr-2 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal-100 text-teal-700">
+                      <Bot className="h-3.5 w-3.5" />
                     </div>
-                    <div>
-                      <p className="text-sm font-semibold">Aisha · PropertyLah AI</p>
-                      <p className="text-[10px] text-teal-100">Online now</p>
-                    </div>
+                  )}
+                  <div
+                    className={cn(
+                      "max-w-[82%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed",
+                      msg.side === "right"
+                        ? "rounded-br-sm bg-teal-700 text-white"
+                        : "rounded-bl-sm bg-white text-stone-700 shadow-sm"
+                    )}
+                  >
+                    {msg.text}
                   </div>
                 </div>
-                <div className="space-y-3 bg-stone-50 p-4">
-                  {chatMessages.map((msg, i) => (
-                    <div
-                      key={i}
-                      className={cn("flex", msg.side === "right" ? "justify-end" : "justify-start")}
-                    >
-                      {msg.side === "left" && (
-                        <div className="mr-2 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal-100 text-teal-700">
-                          <Bot className="h-3.5 w-3.5" />
-                        </div>
-                      )}
-                      <div
-                        className={cn(
-                          "max-w-[82%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed",
-                          msg.side === "right"
-                            ? "rounded-br-sm bg-teal-700 text-white"
-                            : "rounded-bl-sm bg-white text-stone-700 shadow-sm"
-                        )}
-                      >
-                        {msg.text}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="border-t border-stone-100 bg-white px-4 py-3">
-                  <div className="flex items-center gap-2 rounded-full bg-stone-100 px-4 py-2 text-sm text-stone-400">
-                    Type a message…
-                  </div>
-                </div>
+              ))}
+            </div>
+            <div className="border-t border-stone-100 bg-white px-4 py-3">
+              <div className="flex items-center gap-2 rounded-full bg-stone-100 px-4 py-2 text-sm text-stone-400">
+                Type a message…
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Stats / Social proof */}
+      {/* Stats */}
       <section className="border-y border-stone-200 bg-white py-10">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
@@ -479,50 +426,6 @@ export default function LandingPage() {
                 </div>
                 <h3 className="mt-5 text-lg font-semibold text-stone-900">{feature.title}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-stone-600">{feature.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Deep feature sections */}
-      <section id="how-it-works" className="bg-white py-20 sm:py-28">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mb-14 text-center">
-            <h2 className="text-3xl font-semibold tracking-tight text-stone-900 sm:text-4xl">
-              Every feature built for <span className="font-serif italic text-teal-700">real selling</span>.
-            </h2>
-          </div>
-
-          <div className="space-y-20">
-            {deepFeatures.map((item, index) => (
-              <div
-                key={item.tag}
-                className={cn(
-                  "grid grid-cols-1 items-center gap-12 lg:grid-cols-2",
-                  index % 2 === 1 ? "lg:flex-row-reverse" : ""
-                )}
-              >
-                <div className={cn("order-2", index % 2 === 1 ? "lg:order-1" : "lg:order-2")}>
-                  <VisualCard visual={item.visual} />
-                </div>
-                <div className={cn("order-1", index % 2 === 1 ? "lg:order-2" : "lg:order-1")}>
-                  <span className="inline-flex items-center rounded-full bg-teal-50 px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-teal-700">
-                    {item.tag}
-                  </span>
-                  <h3 className="mt-4 text-2xl font-semibold leading-tight text-stone-900 sm:text-3xl">
-                    {item.title} <span className="font-serif italic text-teal-700">{item.highlight}</span>.
-                  </h3>
-                  <p className="mt-4 text-base leading-relaxed text-stone-600">{item.description}</p>
-                  <ul className="mt-6 space-y-3">
-                    {item.points.map((point) => (
-                      <li key={point} className="flex items-start gap-3 text-sm text-stone-700">
-                        <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
-                        {point}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
               </div>
             ))}
           </div>
@@ -598,7 +501,7 @@ export default function LandingPage() {
       </section>
 
       {/* Steps */}
-      <section className="py-20 sm:py-28 bg-warm-50">
+      <section id="how-it-works" className="py-20 sm:py-28 bg-warm-50">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="text-3xl font-semibold tracking-tight text-stone-900 sm:text-4xl">
@@ -607,71 +510,12 @@ export default function LandingPage() {
           </div>
           <div className="mt-14 grid grid-cols-1 gap-8 md:grid-cols-3">
             {steps.map((step) => (
-              <div key={step.step} className="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm">
+              <div key={step.step} className="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm text-center">
                 <span className="text-4xl font-semibold text-stone-200">{step.step}</span>
                 <h3 className="mt-4 text-lg font-semibold text-stone-900">{step.title}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-stone-600">{step.description}</p>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* AI Chatbot highlight */}
-      <section className="py-20 sm:py-28">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="overflow-hidden rounded-[2.5rem] bg-stone-900 px-6 py-16 sm:px-16 sm:py-20">
-            <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
-              <div>
-                <h2 className="text-3xl font-semibold leading-tight text-white sm:text-4xl">
-                  Your customer service, awake at{" "}
-                  <span className="font-serif italic text-teal-300">3 AM</span>.
-                </h2>
-                <p className="mt-4 text-stone-300">
-                  Upload your price lists, FAQs and project info. The AI quotes directly from your
-                  content and books viewings while you rest.
-                </p>
-                <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  {[
-                    "Trained on your listings",
-                    "Replies in BM, English, rojak",
-                    "Hand off to human agents",
-                    "Tracks every lead value",
-                  ].map((point) => (
-                    <div key={point} className="flex items-center gap-2 text-sm text-stone-300">
-                      <CheckCircle className="h-4 w-4 text-teal-400" />
-                      {point}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="relative rounded-3xl bg-stone-800 p-6 shadow-2xl">
-                <div className="mb-4 flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-teal-500/20 text-teal-300">
-                    <Bot className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-white">Aisha AI</p>
-                    <p className="text-xs text-stone-400">Always online</p>
-                  </div>
-                </div>
-                <div className="space-y-3">
-                  <div className="rounded-2xl rounded-bl-sm bg-stone-700 px-4 py-3 text-sm text-stone-200">
-                    Hi! Berapa harga untuk Residensi Harmoni?
-                  </div>
-                  <div className="rounded-2xl rounded-br-sm bg-teal-700 px-4 py-3 text-sm text-white">
-                    Residensi Harmoni bermula RM 580,000 untuk 3 bilik. Nak saya cari slot viewing?
-                  </div>
-                  <div className="rounded-2xl rounded-bl-sm bg-stone-700 px-4 py-3 text-sm text-stone-200">
-                    Boleh. This Saturday 2pm?
-                  </div>
-                  <div className="rounded-2xl rounded-br-sm bg-teal-700 px-4 py-3 text-sm text-white">
-                    Confirmed! Saturday 2pm. Saya hantar detail viewing sekarang. ✓
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </section>
@@ -735,7 +579,7 @@ export default function LandingPage() {
       </section>
 
       {/* Testimonials */}
-      <section id="testimonials" className="py-20 sm:py-28">
+      <section className="py-20 sm:py-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="text-3xl font-semibold tracking-tight text-stone-900 sm:text-4xl">
@@ -847,124 +691,6 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
-    </div>
-  );
-}
-
-function VisualCard({ visual }: { visual: string }) {
-  if (visual === "qualify") {
-    return (
-      <div className="rounded-3xl border border-stone-200 bg-white p-6 shadow-lg">
-        <div className="flex items-center gap-3 border-b border-stone-100 pb-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
-            <Users className="h-5 w-5" />
-          </div>
-          <div>
-            <p className="text-sm font-semibold text-stone-900">Lead Score</p>
-            <p className="text-xs text-stone-500">Updated automatically</p>
-          </div>
-          <span className="ml-auto rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700">
-            Hot
-          </span>
-        </div>
-        <div className="mt-4 space-y-3">
-          {[
-            { label: "Budget", value: "RM 600,000", ok: true },
-            { label: "Timeline", value: "3 months", ok: true },
-            { label: "Financing", value: "Loan approved", ok: true },
-            { label: "Location", value: "KL / Selangor", ok: true },
-          ].map((row) => (
-            <div key={row.label} className="flex items-center justify-between text-sm">
-              <span className="text-stone-500">{row.label}</span>
-              <span className="flex items-center gap-1.5 font-medium text-stone-900">
-                {row.ok && <CheckCircle className="h-3.5 w-3.5 text-emerald-600" />}
-                {row.value}
-              </span>
-            </div>
-          ))}
-        </div>
-        <div className="mt-5 rounded-2xl bg-warm-50 p-4">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-stone-500">Score</span>
-            <span className="text-lg font-semibold text-emerald-700">92/100</span>
-          </div>
-          <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-stone-200">
-            <div className="h-full w-[92%] rounded-full bg-emerald-500"></div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (visual === "match") {
-    return (
-      <div className="rounded-3xl border border-stone-200 bg-white p-6 shadow-lg">
-        <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">2 matches found</p>
-        <div className="mt-4 space-y-3">
-          {[
-            { name: "Residensi Harmoni", price: "RM 580,000", beds: "3 beds · 2 baths", area: "KLCC" },
-            { name: "The Horizon Suite", price: "RM 595,000", beds: "3 beds · 2 baths", area: "Bukit Bintang" },
-          ].map((listing, i) => (
-            <div key={listing.name} className="rounded-2xl bg-warm-50 p-4">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-sm font-semibold text-stone-900">{listing.name}</p>
-                  <p className="text-xs text-stone-500">{listing.beds} · {listing.area}</p>
-                </div>
-                <span className="text-sm font-semibold text-emerald-700">{listing.price}</span>
-              </div>
-              {i === 0 && (
-                <div className="mt-3 flex items-center gap-1.5 text-[10px] text-teal-700">
-                  <Shield className="h-3 w-3" />
-                  Cited from agency inventory
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="rounded-3xl border border-stone-200 bg-white p-6 shadow-lg">
-      <div className="mb-4 flex items-center gap-2">
-        <Calendar className="h-5 w-5 text-teal-700" />
-        <span className="text-sm font-semibold text-stone-900">This week</span>
-      </div>
-      <div className="space-y-3">
-        {[
-          { day: "Mon", slots: ["10:00 AM", "2:00 PM", "4:00 PM"], active: 1 },
-          { day: "Tue", slots: ["10:00 AM", "2:00 PM", "4:00 PM"], active: null },
-          { day: "Sat", slots: ["10:00 AM", "2:00 PM", "4:00 PM"], active: 1 },
-        ].map((day) => (
-          <div key={day.day} className="flex items-center gap-3">
-            <span className="w-9 text-xs font-semibold text-stone-500">{day.day}</span>
-            <div className="flex flex-1 gap-2">
-              {day.slots.map((slot, i) => (
-                <span
-                  key={slot}
-                  className={cn(
-                    "rounded-lg px-2 py-1 text-[10px] font-medium",
-                    i === day.active
-                      ? "bg-teal-700 text-white"
-                      : "bg-warm-100 text-stone-500"
-                  )}
-                >
-                  {slot}
-                </span>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-      <div className="mt-5 rounded-2xl bg-teal-50 p-4">
-        <div className="flex items-center gap-2 text-sm font-medium text-teal-800">
-          <CheckCircle className="h-4 w-4" />
-          Saturday 2:00 PM confirmed
-        </div>
-        <p className="mt-1 text-xs text-teal-600">Residensi Harmoni · viewing details sent</p>
-      </div>
     </div>
   );
 }
