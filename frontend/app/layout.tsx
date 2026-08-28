@@ -27,6 +27,12 @@ export default function RootLayout({
   return (
     <html lang="en" className={cn(inter.variable, "scroll-smooth")}>
       <body className="min-h-screen bg-warm-50 font-sans antialiased">
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "try{var t=localStorage.getItem('propertylah-theme');if(t==='light'||t==='dark'){document.documentElement.dataset.theme=t;}}catch(e){}",
+          }}
+        />
         {isMarketing ? (
           <>{children}</>
         ) : (

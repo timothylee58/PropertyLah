@@ -18,6 +18,67 @@
     background-color: #ccfbf1;
     color: #0f766e;
   }
+
+  /* Landing page theme tokens — dark is the default look. */
+  html {
+    --bg: #0c0c0c;
+    --bg-translucent: rgba(12, 12, 12, 0.8);
+    --bg-alt: #0d0d0d;
+    --bg-deep: #0a0a0a;
+    --card: #111111;
+    --card-alt: #1c1c1c;
+    --heading: #fafafa;
+    --text: #efefef;
+    --subtle: #9e9e9e;
+    --nav: #bcbcbc;
+    --nav-hover: #f2f2f2;
+    --icon: #e8e8e8;
+    --placeholder: #aeaeae;
+    --faint: #6b6b6d;
+    --hairline: rgba(255, 255, 255, 0.065);
+    --hairline-strong: rgba(255, 255, 255, 0.15);
+    --popular-border: rgba(255, 255, 255, 0.3);
+    --chip-fill: rgba(255, 255, 255, 0.028);
+    --chip-fill-hover: rgba(255, 255, 255, 0.06);
+    --tile: rgba(255, 255, 255, 0.04);
+    --avatar-bg: rgba(255, 255, 255, 0.1);
+    --step-num: rgba(255, 255, 255, 0.1);
+    --btn-bg: #ffffff;
+    --btn-bg-hover: #ededed;
+    --btn-fg: #0c0c0c;
+    --mark-stroke: #f4f4f4;
+    --mark-fill: #fbfbfb;
+  }
+
+  html[data-theme="light"] {
+    --bg: #ffffff;
+    --bg-translucent: rgba(255, 255, 255, 0.82);
+    --bg-alt: #f4f3f0;
+    --bg-deep: #efeee9;
+    --card: #ffffff;
+    --card-alt: #f1f0ec;
+    --heading: #171717;
+    --text: #27272a;
+    --subtle: #6b6b6b;
+    --nav: #52525b;
+    --nav-hover: #171717;
+    --icon: #3f3f46;
+    --placeholder: #8a8a8a;
+    --faint: #93938f;
+    --hairline: rgba(0, 0, 0, 0.08);
+    --hairline-strong: rgba(0, 0, 0, 0.15);
+    --popular-border: rgba(0, 0, 0, 0.2);
+    --chip-fill: rgba(0, 0, 0, 0.03);
+    --chip-fill-hover: rgba(0, 0, 0, 0.06);
+    --tile: rgba(0, 0, 0, 0.04);
+    --avatar-bg: rgba(0, 0, 0, 0.06);
+    --step-num: rgba(0, 0, 0, 0.08);
+    --btn-bg: #0c0c0c;
+    --btn-bg-hover: #262626;
+    --btn-fg: #ffffff;
+    --mark-stroke: #27272a;
+    --mark-fill: #171717;
+  }
 }
 
 @layer utilities {
@@ -30,5 +91,39 @@
   .scrollbar-thin::-webkit-scrollbar-thumb {
     background-color: #d6d3cc;
     border-radius: 9999px;
+  }
+
+  .grad-text {
+    background-image: linear-gradient(90deg, #ffe776 0%, #ffd400 22%, #ffd000 40%, #c9c93c 60%, #86ca8a 76%, #78d0cd 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+  }
+
+  .grad-bar {
+    background-image: linear-gradient(90deg, #ffe776 0%, #ffd400 22%, #ffd000 40%, #c9c93c 60%, #86ca8a 76%, #78d0cd 100%);
+  }
+
+  .fade-up {
+    opacity: 0;
+    animation: landing-fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fade-up {
+      opacity: 1;
+      animation: none;
+    }
+  }
+}
+
+@keyframes landing-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
