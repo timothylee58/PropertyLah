@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { ThemeToggle } from "@/components/theme-toggle";
 import {
   Calendar,
   Users,
@@ -218,12 +219,12 @@ function Mark({ className }: { className?: string }) {
 
   return (
     <svg viewBox="0 0 52 52" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
-      <g stroke="#f4f4f4" strokeWidth="1.4" strokeLinecap="round">
+      <g stroke="var(--mark-stroke)" strokeWidth="1.4" strokeLinecap="round">
         {rays.map((r, i) => (
           <line key={i} x1={r.x1} y1={r.y1} x2={r.x2} y2={r.y2} />
         ))}
       </g>
-      <circle cx={cx} cy={cy} r="7.4" fill="#fbfbfb" />
+      <circle cx={cx} cy={cy} r="7.4" fill="var(--mark-fill)" />
     </svg>
   );
 }
@@ -239,13 +240,13 @@ export default function LandingPage() {
   const goToDashboard = () => router.push("/dashboard");
 
   return (
-    <div className="min-h-screen bg-[#0c0c0c] font-sans text-[#fafafa] antialiased">
+    <div className="min-h-screen bg-[var(--bg)] font-sans text-[var(--heading)] antialiased">
       {/* Navigation */}
-      <header className="fixed left-0 right-0 top-0 z-50 border-b border-white/[0.065] bg-[#0c0c0c]/80 backdrop-blur-md">
+      <header className="fixed left-0 right-0 top-0 z-50 border-b border-[var(--hairline)] bg-[var(--bg-translucent)] backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-2">
             <Mark className="h-8 w-8" />
-            <span className="text-lg font-semibold text-[#fafafa]">PropertyLah</span>
+            <span className="text-lg font-semibold text-[var(--heading)]">PropertyLah</span>
           </Link>
 
           <nav className="hidden items-center gap-8 md:flex">
@@ -253,7 +254,7 @@ export default function LandingPage() {
               <a
                 key={link.href}
                 href={link.href}
-                className="text-sm font-medium text-[#bcbcbc] transition hover:text-[#f2f2f2]"
+                className="text-sm font-medium text-[var(--nav)] transition hover:text-[var(--nav-hover)]"
               >
                 {link.label}
               </a>
@@ -263,51 +264,55 @@ export default function LandingPage() {
           <div className="hidden items-center gap-3 md:flex">
             <Link
               href="/dashboard"
-              className="text-sm font-medium text-[#bcbcbc] transition hover:text-[#f2f2f2]"
+              className="text-sm font-medium text-[var(--nav)] transition hover:text-[var(--nav-hover)]"
             >
               Log in
             </Link>
             <button
               onClick={goToDashboard}
-              className="rounded-full bg-white px-4 py-2 text-sm font-medium text-[#0c0c0c] transition hover:bg-[#ededed] active:scale-[.98]"
+              className="rounded-full bg-[var(--btn-bg)] px-4 py-2 text-sm font-medium text-[var(--btn-fg)] transition hover:bg-[var(--btn-bg-hover)] active:scale-[.98]"
             >
               Get Started
             </button>
+            <ThemeToggle className="rounded-lg p-2 text-[var(--nav)] transition hover:bg-[var(--chip-fill)] hover:text-[var(--nav-hover)]" />
           </div>
 
-          <button
-            className="rounded-lg p-2 text-[#bcbcbc] hover:bg-white/5 md:hidden"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label="Toggle menu"
-          >
-            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
+          <div className="flex items-center gap-1 md:hidden">
+            <ThemeToggle className="rounded-lg p-2 text-[var(--nav)] hover:bg-[var(--chip-fill)]" />
+            <button
+              className="rounded-lg p-2 text-[var(--nav)] hover:bg-[var(--chip-fill)]"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Toggle menu"
+            >
+              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
+          </div>
         </div>
 
         {mobileMenuOpen && (
-          <div className="border-t border-white/[0.065] bg-[#0c0c0c] px-4 py-4 md:hidden">
+          <div className="border-t border-[var(--hairline)] bg-[var(--bg)] px-4 py-4 md:hidden">
             <nav className="flex flex-col gap-3">
               {navLinks.map((link) => (
                 <a
                   key={link.href}
                   href={link.href}
-                  className="text-sm font-medium text-[#bcbcbc]"
+                  className="text-sm font-medium text-[var(--nav)]"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {link.label}
                 </a>
               ))}
-              <hr className="border-white/[0.065]" />
+              <hr className="border-[var(--hairline)]" />
               <Link
                 href="/dashboard"
-                className="text-sm font-medium text-[#bcbcbc]"
+                className="text-sm font-medium text-[var(--nav)]"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Log in
               </Link>
               <Link
                 href="/dashboard"
-                className="inline-flex items-center justify-center rounded-full bg-white px-4 py-2 text-sm font-medium text-[#0c0c0c]"
+                className="inline-flex items-center justify-center rounded-full bg-[var(--btn-bg)] px-4 py-2 text-sm font-medium text-[var(--btn-fg)]"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Get Started
@@ -321,7 +326,7 @@ export default function LandingPage() {
       <section className="relative overflow-hidden pt-32 pb-20 sm:pt-40 sm:pb-28">
         <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
           <div
-            className="fade-up mb-6 inline-flex items-center gap-2 rounded-full border border-white/[0.065] bg-white/[0.028] px-3 py-1.5 text-xs font-medium text-[#bcbcbc]"
+            className="fade-up mb-6 inline-flex items-center gap-2 rounded-full border border-[var(--hairline)] bg-[var(--chip-fill)] px-3 py-1.5 text-xs font-medium text-[var(--nav)]"
             style={fadeStyle(0)}
           >
             <span className="relative flex h-2 w-2">
@@ -332,7 +337,7 @@ export default function LandingPage() {
           </div>
 
           <h1
-            className="fade-up text-5xl font-medium leading-[1.04] tracking-tight text-[#fafafa] sm:text-6xl lg:text-7xl"
+            className="fade-up text-5xl font-medium leading-[1.04] tracking-tight text-[var(--heading)] sm:text-6xl lg:text-7xl"
             style={fadeStyle(80)}
           >
             PropertyLah,{" "}
@@ -340,7 +345,7 @@ export default function LandingPage() {
           </h1>
 
           <p
-            className="fade-up mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-[#9e9e9e]"
+            className="fade-up mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-[var(--subtle)]"
             style={fadeStyle(220)}
           >
             An AI concierge that qualifies prospects, matches listings, and schedules viewings
@@ -353,14 +358,14 @@ export default function LandingPage() {
           >
             <button
               onClick={goToDashboard}
-              className="inline-flex w-full items-center justify-center rounded-full bg-white px-6 py-3 text-base font-medium text-[#0c0c0c] transition hover:bg-[#ededed] active:scale-[.98] sm:w-auto"
+              className="inline-flex w-full items-center justify-center rounded-full bg-[var(--btn-bg)] px-6 py-3 text-base font-medium text-[var(--btn-fg)] transition hover:bg-[var(--btn-bg-hover)] active:scale-[.98] sm:w-auto"
             >
               Get Started Today
               <ArrowRight className="ml-2 h-4 w-4" />
             </button>
             <a
               href="#how-it-works"
-              className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/[0.15] bg-white/[0.028] px-6 py-3 text-sm font-medium text-[#f2f2f2] transition hover:bg-white/[0.06] sm:w-auto"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-[var(--hairline-strong)] bg-[var(--chip-fill)] px-6 py-3 text-sm font-medium text-[var(--nav-hover)] transition hover:bg-[var(--chip-fill-hover)] sm:w-auto"
             >
               Watch demo
               <ChevronRight className="h-4 w-4" />
@@ -368,7 +373,7 @@ export default function LandingPage() {
           </div>
 
           <div
-            className="fade-up mt-8 flex flex-wrap items-center justify-center gap-4 text-xs font-medium text-[#9e9e9e]"
+            className="fade-up mt-8 flex flex-wrap items-center justify-center gap-4 text-xs font-medium text-[var(--subtle)]"
             style={fadeStyle(400)}
           >
             <span className="flex items-center gap-1.5">
@@ -387,16 +392,16 @@ export default function LandingPage() {
 
           {/* Chat mock */}
           <div
-            className="fade-up relative mx-auto mt-16 max-w-sm overflow-hidden rounded-[2.5rem] border border-white/[0.065] bg-[#111111] shadow-[0_2px_40px_rgba(0,0,0,0.45)]"
+            className="fade-up relative mx-auto mt-16 max-w-sm overflow-hidden rounded-[2.5rem] border border-[var(--hairline)] bg-[var(--card)] shadow-[0_2px_40px_rgba(0,0,0,0.45)]"
             style={fadeStyle(520)}
           >
-            <div className="flex items-center gap-2 border-b border-white/[0.065] px-5 py-4">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10">
-                <Bot className="h-4 w-4 text-[#e8e8e8]" />
+            <div className="flex items-center gap-2 border-b border-[var(--hairline)] px-5 py-4">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--avatar-bg)]">
+                <Bot className="h-4 w-4 text-[var(--icon)]" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-[#fafafa]">Aisha · PropertyLah AI</p>
-                <p className="text-[10px] text-[#9e9e9e]">Online now</p>
+                <p className="text-sm font-semibold text-[var(--heading)]">Aisha · PropertyLah AI</p>
+                <p className="text-[10px] text-[var(--subtle)]">Online now</p>
               </div>
             </div>
             <div className="space-y-3 p-4">
@@ -406,7 +411,7 @@ export default function LandingPage() {
                   className={cn("flex", msg.side === "right" ? "justify-end" : "justify-start")}
                 >
                   {msg.side === "left" && (
-                    <div className="mr-2 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/10 text-[#e8e8e8]">
+                    <div className="mr-2 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--avatar-bg)] text-[var(--icon)]">
                       <Bot className="h-3.5 w-3.5" />
                     </div>
                   )}
@@ -414,8 +419,8 @@ export default function LandingPage() {
                     className={cn(
                       "max-w-[82%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed",
                       msg.side === "right"
-                        ? "rounded-br-sm bg-white text-[#0c0c0c]"
-                        : "rounded-bl-sm bg-[#1c1c1c] text-[#efefef]"
+                        ? "rounded-br-sm bg-[var(--btn-bg)] text-[var(--btn-fg)]"
+                        : "rounded-bl-sm bg-[var(--card-alt)] text-[var(--text)]"
                     )}
                   >
                     {msg.text}
@@ -423,8 +428,8 @@ export default function LandingPage() {
                 </div>
               ))}
             </div>
-            <div className="border-t border-white/[0.065] px-4 py-3">
-              <div className="flex items-center gap-2 rounded-full bg-white/[0.06] px-4 py-2 text-sm text-[#aeaeae]">
+            <div className="border-t border-[var(--hairline)] px-4 py-3">
+              <div className="flex items-center gap-2 rounded-full bg-[var(--chip-fill-hover)] px-4 py-2 text-sm text-[var(--placeholder)]">
                 Type a message…
               </div>
             </div>
@@ -433,13 +438,13 @@ export default function LandingPage() {
       </section>
 
       {/* Stats */}
-      <section className="border-y border-white/[0.065] bg-[#0d0d0d] py-10">
+      <section className="border-y border-[var(--hairline)] bg-[var(--bg-alt)] py-10">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
             {stats.map((stat) => (
               <div key={stat.label} className="text-center">
-                <p className="text-3xl font-semibold text-[#fafafa] sm:text-4xl">{stat.value}</p>
-                <p className="mt-1 text-sm text-[#9e9e9e]">{stat.label}</p>
+                <p className="text-3xl font-semibold text-[var(--heading)] sm:text-4xl">{stat.value}</p>
+                <p className="mt-1 text-sm text-[var(--subtle)]">{stat.label}</p>
               </div>
             ))}
           </div>
@@ -450,10 +455,10 @@ export default function LandingPage() {
       <section id="features" className="py-20 sm:py-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl font-medium tracking-tight text-[#fafafa] sm:text-4xl">
+            <h2 className="text-3xl font-medium tracking-tight text-[var(--heading)] sm:text-4xl">
               The operating system for <span className="grad-text">property agents</span>.
             </h2>
-            <p className="mt-4 text-[#9e9e9e]">
+            <p className="mt-4 text-[var(--subtle)]">
               Qualify, match, and book — all from the chat apps your leads already use.
             </p>
           </div>
@@ -462,13 +467,13 @@ export default function LandingPage() {
             {useCases.map((feature) => (
               <div
                 key={feature.title}
-                className="rounded-3xl border border-white/[0.065] bg-[#111111] p-6 transition hover:border-white/[0.15]"
+                className="rounded-3xl border border-[var(--hairline)] bg-[var(--card)] p-6 transition hover:border-[var(--hairline-strong)]"
               >
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/[0.06] text-[#e8e8e8]">
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--chip-fill-hover)] text-[var(--icon)]">
                   <feature.icon className="h-5 w-5" />
                 </div>
-                <h3 className="mt-5 text-lg font-semibold text-[#fafafa]">{feature.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-[#9e9e9e]">{feature.description}</p>
+                <h3 className="mt-5 text-lg font-semibold text-[var(--heading)]">{feature.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-[var(--subtle)]">{feature.description}</p>
               </div>
             ))}
           </div>
@@ -476,14 +481,14 @@ export default function LandingPage() {
       </section>
 
       {/* Dark platform section */}
-      <section className="bg-[#0d0d0d] py-20 sm:py-28 text-white">
+      <section className="bg-[var(--bg-alt)] py-20 sm:py-28 text-[var(--heading)]">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 items-center">
             <div>
               <h2 className="text-3xl font-medium leading-tight sm:text-4xl">
                 One dashboard for your <span className="grad-text">entire agency</span>.
               </h2>
-              <p className="mt-4 text-[#9e9e9e]">
+              <p className="mt-4 text-[var(--subtle)]">
                 Monitor every conversation, lead, and viewing from a single command center. Take over when the AI needs a human touch.
               </p>
               <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -493,7 +498,7 @@ export default function LandingPage() {
                   "Viewings calendar and reminders",
                   "Knowledge base and rule audit",
                 ].map((point) => (
-                  <div key={point} className="flex items-center gap-2 text-sm text-[#9e9e9e]">
+                  <div key={point} className="flex items-center gap-2 text-sm text-[var(--subtle)]">
                     <CheckCircle className="h-4 w-4 text-emerald-400" />
                     {point}
                   </div>
@@ -502,7 +507,7 @@ export default function LandingPage() {
               <div className="mt-8">
                 <button
                   onClick={goToDashboard}
-                  className="inline-flex items-center justify-center rounded-full bg-white px-6 py-3 text-base font-medium text-[#0c0c0c] transition hover:bg-[#ededed] active:scale-[.98]"
+                  className="inline-flex items-center justify-center rounded-full bg-[var(--btn-bg)] px-6 py-3 text-base font-medium text-[var(--btn-fg)] transition hover:bg-[var(--btn-bg-hover)] active:scale-[.98]"
                 >
                   Open Dashboard
                   <ArrowRight className="ml-2 h-4 w-4" />
@@ -510,14 +515,14 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <div className="rounded-3xl border border-white/[0.065] bg-[#111111] p-6">
+            <div className="rounded-3xl border border-[var(--hairline)] bg-[var(--card)] p-6">
               <div className="mb-4 flex items-center gap-2">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-[#e8e8e8]">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--avatar-bg)] text-[var(--icon)]">
                   <TrendingUp className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="font-semibold text-white">Command Center</p>
-                  <p className="text-xs text-[#9e9e9e]">Live pipeline</p>
+                  <p className="font-semibold text-[var(--heading)]">Command Center</p>
+                  <p className="text-xs text-[var(--subtle)]">Live pipeline</p>
                 </div>
               </div>
               <div className="space-y-3">
@@ -527,14 +532,14 @@ export default function LandingPage() {
                   { label: "Viewings Booked", value: "5", icon: Calendar },
                   { label: "Hot Leads", value: "3", icon: Zap },
                 ].map((row) => (
-                  <div key={row.label} className="flex items-center justify-between rounded-2xl bg-white/[0.04] p-4">
+                  <div key={row.label} className="flex items-center justify-between rounded-2xl bg-[var(--tile)] p-4">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/[0.06] text-[#e8e8e8]">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--chip-fill-hover)] text-[var(--icon)]">
                         <row.icon className="h-4 w-4" />
                       </div>
-                      <span className="text-sm text-[#9e9e9e]">{row.label}</span>
+                      <span className="text-sm text-[var(--subtle)]">{row.label}</span>
                     </div>
-                    <span className="text-lg font-semibold text-white">{row.value}</span>
+                    <span className="text-lg font-semibold text-[var(--heading)]">{row.value}</span>
                   </div>
                 ))}
               </div>
@@ -544,19 +549,19 @@ export default function LandingPage() {
       </section>
 
       {/* Steps */}
-      <section id="how-it-works" className="py-20 sm:py-28 bg-[#0c0c0c]">
+      <section id="how-it-works" className="py-20 sm:py-28 bg-[var(--bg)]">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl font-medium tracking-tight text-[#fafafa] sm:text-4xl">
+            <h2 className="text-3xl font-medium tracking-tight text-[var(--heading)] sm:text-4xl">
               Up and running in <span className="grad-text">minutes</span>.
             </h2>
           </div>
           <div className="mt-14 grid grid-cols-1 gap-8 md:grid-cols-3">
             {steps.map((step) => (
-              <div key={step.step} className="rounded-3xl border border-white/[0.065] bg-[#111111] p-6 text-center">
-                <span className="text-4xl font-semibold text-white/10">{step.step}</span>
-                <h3 className="mt-4 text-lg font-semibold text-[#fafafa]">{step.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-[#9e9e9e]">{step.description}</p>
+              <div key={step.step} className="rounded-3xl border border-[var(--hairline)] bg-[var(--card)] p-6 text-center">
+                <span className="text-4xl font-semibold text-[var(--step-num)]">{step.step}</span>
+                <h3 className="mt-4 text-lg font-semibold text-[var(--heading)]">{step.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-[var(--subtle)]">{step.description}</p>
               </div>
             ))}
           </div>
@@ -564,13 +569,13 @@ export default function LandingPage() {
       </section>
 
       {/* Pricing */}
-      <section id="pricing" className="bg-[#0d0d0d] py-20 sm:py-28">
+      <section id="pricing" className="bg-[var(--bg-alt)] py-20 sm:py-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl font-medium tracking-tight text-[#fafafa] sm:text-4xl">
+            <h2 className="text-3xl font-medium tracking-tight text-[var(--heading)] sm:text-4xl">
               Simple, transparent, <span className="grad-text">actually affordable</span>.
             </h2>
-            <p className="mt-4 text-[#9e9e9e]">
+            <p className="mt-4 text-[var(--subtle)]">
               Pick a plan. Cancel anytime. No setup fees, no hidden costs.
             </p>
           </div>
@@ -582,8 +587,8 @@ export default function LandingPage() {
                 className={cn(
                   "relative flex flex-col rounded-3xl border p-6 sm:p-8",
                   plan.popular
-                    ? "border-white/[0.3] bg-white/[0.04]"
-                    : "border-white/[0.065] bg-[#111111]"
+                    ? "border-[var(--popular-border)] bg-[var(--tile)]"
+                    : "border-[var(--hairline)] bg-[var(--card)]"
                 )}
               >
                 {plan.popular && (
@@ -591,18 +596,18 @@ export default function LandingPage() {
                     Most popular
                   </span>
                 )}
-                <span className="text-xs font-semibold uppercase tracking-wide text-[#9e9e9e]">
+                <span className="text-xs font-semibold uppercase tracking-wide text-[var(--subtle)]">
                   {plan.tag}
                 </span>
-                <h3 className="mt-2 text-2xl font-semibold text-[#fafafa]">{plan.name}</h3>
-                <p className="mt-4 text-sm text-[#9e9e9e]">{plan.description}</p>
+                <h3 className="mt-2 text-2xl font-semibold text-[var(--heading)]">{plan.name}</h3>
+                <p className="mt-4 text-sm text-[var(--subtle)]">{plan.description}</p>
                 <div className="mt-6 flex items-baseline gap-1">
-                  <span className="text-4xl font-semibold text-[#fafafa]">{plan.price}</span>
-                  <span className="text-sm text-[#9e9e9e]">{plan.period}</span>
+                  <span className="text-4xl font-semibold text-[var(--heading)]">{plan.price}</span>
+                  <span className="text-sm text-[var(--subtle)]">{plan.period}</span>
                 </div>
                 <ul className="mt-8 flex-1 space-y-3">
                   {plan.features.map((feature) => (
-                    <li key={feature} className="flex items-start gap-3 text-sm text-[#efefef]">
+                    <li key={feature} className="flex items-start gap-3 text-sm text-[var(--text)]">
                       <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
                       {feature}
                     </li>
@@ -613,8 +618,8 @@ export default function LandingPage() {
                   className={cn(
                     "mt-8 w-full rounded-full px-4 py-2.5 text-sm font-medium transition active:scale-[.98]",
                     plan.popular
-                      ? "bg-white text-[#0c0c0c] hover:bg-[#ededed]"
-                      : "border border-white/[0.15] bg-transparent text-[#f2f2f2] hover:bg-white/[0.06]"
+                      ? "bg-[var(--btn-bg)] text-[var(--btn-fg)] hover:bg-[var(--btn-bg-hover)]"
+                      : "border border-[var(--hairline-strong)] bg-transparent text-[var(--nav-hover)] hover:bg-[var(--chip-fill-hover)]"
                   )}
                 >
                   {plan.cta}
@@ -626,13 +631,13 @@ export default function LandingPage() {
       </section>
 
       {/* Testimonials */}
-      <section className="py-20 sm:py-28 bg-[#0c0c0c]">
+      <section className="py-20 sm:py-28 bg-[var(--bg)]">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl font-medium tracking-tight text-[#fafafa] sm:text-4xl">
+            <h2 className="text-3xl font-medium tracking-tight text-[var(--heading)] sm:text-4xl">
               What our <span className="grad-text">agents</span> say.
             </h2>
-            <p className="mt-4 text-[#9e9e9e]">
+            <p className="mt-4 text-[var(--subtle)]">
               Malaysian agents and agencies using PropertyLah every day.
             </p>
           </div>
@@ -641,21 +646,21 @@ export default function LandingPage() {
             {testimonials.map((item) => (
               <div
                 key={item.name}
-                className="mb-6 break-inside-avoid rounded-2xl border border-white/[0.065] bg-[#111111] p-6"
+                className="mb-6 break-inside-avoid rounded-2xl border border-[var(--hairline)] bg-[var(--card)] p-6"
               >
                 <div className="flex gap-1 text-amber-400">
                   {[...Array(5)].map((_, i) => (
                     <Star key={i} className="h-4 w-4 fill-current" />
                   ))}
                 </div>
-                <p className="mt-4 text-sm leading-relaxed text-[#efefef]">&ldquo;{item.quote}&rdquo;</p>
+                <p className="mt-4 text-sm leading-relaxed text-[var(--text)]">&ldquo;{item.quote}&rdquo;</p>
                 <div className="mt-5 flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-xs font-semibold text-[#f2f2f2]">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--avatar-bg)] text-xs font-semibold text-[var(--nav-hover)]">
                     {item.initials}
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-[#fafafa]">{item.name}</p>
-                    <p className="text-xs text-[#9e9e9e]">{item.role}</p>
+                    <p className="text-sm font-semibold text-[var(--heading)]">{item.name}</p>
+                    <p className="text-xs text-[var(--subtle)]">{item.role}</p>
                   </div>
                 </div>
               </div>
@@ -665,25 +670,25 @@ export default function LandingPage() {
       </section>
 
       {/* Final CTA */}
-      <section className="bg-[#0d0d0d] py-20 sm:py-28">
+      <section className="bg-[var(--bg-alt)] py-20 sm:py-28">
         <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-medium tracking-tight text-[#fafafa] sm:text-4xl">
+          <h2 className="text-3xl font-medium tracking-tight text-[var(--heading)] sm:text-4xl">
             Ready to stop missing leads?
           </h2>
-          <p className="mt-4 text-[#9e9e9e]">
+          <p className="mt-4 text-[var(--subtle)]">
             Start your free trial. No credit card required. Cancel anytime.
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <button
               onClick={goToDashboard}
-              className="inline-flex w-full items-center justify-center rounded-full bg-white px-8 py-3 text-base font-medium text-[#0c0c0c] transition hover:bg-[#ededed] active:scale-[.98] sm:w-auto"
+              className="inline-flex w-full items-center justify-center rounded-full bg-[var(--btn-bg)] px-8 py-3 text-base font-medium text-[var(--btn-fg)] transition hover:bg-[var(--btn-bg-hover)] active:scale-[.98] sm:w-auto"
             >
               Get Started Today
               <ArrowRight className="ml-2 h-4 w-4" />
             </button>
             <a
               href="mailto:hello@propertylah.ai"
-              className="inline-flex w-full items-center justify-center rounded-full border border-white/[0.15] bg-transparent px-6 py-3 text-sm font-medium text-[#f2f2f2] transition hover:bg-white/[0.06] sm:w-auto"
+              className="inline-flex w-full items-center justify-center rounded-full border border-[var(--hairline-strong)] bg-transparent px-6 py-3 text-sm font-medium text-[var(--nav-hover)] transition hover:bg-[var(--chip-fill-hover)] sm:w-auto"
             >
               Talk to sales
             </a>
@@ -692,28 +697,28 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-white/[0.065] bg-[#0a0a0a] py-14">
+      <footer className="border-t border-[var(--hairline)] bg-[var(--bg-deep)] py-14">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 gap-8 md:grid-cols-5">
             <div className="col-span-2">
               <Link href="/" className="flex items-center gap-2">
                 <Mark className="h-8 w-8" />
-                <span className="text-lg font-semibold text-[#fafafa]">PropertyLah</span>
+                <span className="text-lg font-semibold text-[var(--heading)]">PropertyLah</span>
               </Link>
-              <p className="mt-4 max-w-xs text-sm leading-relaxed text-[#9e9e9e]">
+              <p className="mt-4 max-w-xs text-sm leading-relaxed text-[var(--subtle)]">
                 The WhatsApp-first AI concierge that qualifies property leads and books viewings
                 while you sleep.
               </p>
             </div>
             {footerLinks.map((group) => (
               <div key={group.title}>
-                <h4 className="text-sm font-semibold text-[#fafafa]">{group.title}</h4>
+                <h4 className="text-sm font-semibold text-[var(--heading)]">{group.title}</h4>
                 <ul className="mt-4 space-y-2">
                   {group.links.map((link) => (
                     <li key={link}>
                       <a
                         href="#"
-                        className="text-sm text-[#9e9e9e] transition hover:text-[#f2f2f2]"
+                        className="text-sm text-[var(--subtle)] transition hover:text-[var(--nav-hover)]"
                       >
                         {link}
                       </a>
@@ -723,14 +728,14 @@ export default function LandingPage() {
               </div>
             ))}
           </div>
-          <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-white/[0.065] pt-8 sm:flex-row">
-            <p className="text-xs text-[#6b6b6d]">
+          <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-[var(--hairline)] pt-8 sm:flex-row">
+            <p className="text-xs text-[var(--faint)]">
               © {new Date().getFullYear()} PropertyLah. Built for Malaysian property agents.
             </p>
             <div className="flex items-center gap-4">
-              <MessageSquare className="h-4 w-4 text-[#6b6b6d]" />
-              <Phone className="h-4 w-4 text-[#6b6b6d]" />
-              <FileText className="h-4 w-4 text-[#6b6b6d]" />
+              <MessageSquare className="h-4 w-4 text-[var(--faint)]" />
+              <Phone className="h-4 w-4 text-[var(--faint)]" />
+              <FileText className="h-4 w-4 text-[var(--faint)]" />
             </div>
           </div>
         </div>
